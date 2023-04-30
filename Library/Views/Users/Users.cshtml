@@ -1,0 +1,64 @@
+﻿@model IEnumerable<User>
+@{
+    ViewData["Title"] = "Users";
+    Layout = "_Layout - logged";
+
+}
+
+
+
+<div class="text-center">
+    <h1 class="display-4">Users list</h1>
+</div>
+
+<div class="container p-3">
+    <div class="row pt-4">
+        <div class="col-6">
+            <h2 class="text-primary">Resource list</h2>
+        </div>
+        <div class="col-6">
+            <a asp-controller="Users" asp-action="AddUser" class="btn btn-primary">
+                Create new user
+            </a>
+        </div>
+    </div>
+</div>
+
+<table class="table table-bordered table-striped" style="width:100%">
+    <thead>
+        <tr>
+            <th>
+                First name
+            </th>
+            <th>
+                Last name
+            </th>
+            <th>
+                Email
+            </th>
+            <th>
+                Phone Number
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach(var obj in Model)
+        {
+            <tr>
+                <td width="20%">
+                    @obj.FirstName
+                </td>
+                <td width="20%">
+                    @obj.LastName
+                </td>
+                <td width="20%">
+                    @obj.Email
+                </td>
+                <td width="20%">
+                    @obj.PhoneNumber
+                </td>
+            </tr>
+        }
+    </tbody>
+
+</table>

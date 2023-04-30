@@ -1,8 +1,13 @@
 ﻿@{
     ViewData["Title"] = "Log or register on this site";
+    Layout = "_Layout";
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <h1 class="display-4">Welcome, click button to log in</h1>
+    <div class="col-6">
+        <a asp-controller="Logged" asp-action="Index" class="btn btn-primart">
+            Log in
+        </a>
+    </div>
 </div>

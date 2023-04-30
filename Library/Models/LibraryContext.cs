@@ -16,7 +16,7 @@ namespace Library.Models
         {
             modelBuilder.Entity<User>(eb =>
             {
-                eb.Property(x => new { x.FirstName, x.LastName, x.DateOfBirth, x.TypeOfUser, x.PersonalIdNumber }).IsRequired();
+                eb.Property(u => u.FirstName).IsRequired();
 
                 eb.HasOne(u => u.Address)
                 .WithOne(a => a.User)
@@ -29,16 +29,16 @@ namespace Library.Models
                 
             
             modelBuilder.Entity<Resource>()
-                .Property(x => new {x.Title, x.Quantity})
-                .IsRequired();
-             
-            modelBuilder.Entity<Address>()
-                .Property(x => new {x.Street, x.City, x.Country})
+                .Property(r => r.Title)
                 .IsRequired();
 
-            
+            modelBuilder.Entity<Address>()
+                .Property(a => a.Street).IsRequired();
+
+
         }
-                
         
+
+
     }
 }
