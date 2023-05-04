@@ -1,4 +1,4 @@
-using Library.Models;
+using Library.Data;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +9,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<LibraryContext>(
     option => option.UseSqlServer(builder.Configuration.GetConnectionString("LibraryConnectionString"))
     );
+
 
 var app = builder.Build();
 
@@ -32,3 +33,4 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
+

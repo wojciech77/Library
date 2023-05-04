@@ -1,4 +1,6 @@
-﻿namespace Library.Models
+﻿using Microsoft.AspNetCore.Identity;
+
+namespace Library.Models
 {
     public class User
     {
@@ -10,12 +12,14 @@
         public DateOnly DateOfBirth { get; set; }
         public DateOnly DateOfUserCreation { get; set; }
         public string PersonalIdNumber { get; set; }
-        public int TypeOfUser { get; set; }
 
         public Address Address { get; set; }
 
         public List<Resource> Resources { get; set; }
 
-
+        public string PasswordHash { get; set; } = string.Empty;
+        public virtual Role? Role { get; set; }
+        public int RoleId { get; set; }
+        
     }
 }

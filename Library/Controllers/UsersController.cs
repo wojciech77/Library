@@ -1,4 +1,5 @@
-﻿using Library.Models;
+﻿using Library.Data;
+using Library.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Library.Controllers
@@ -28,7 +29,6 @@ namespace Library.Controllers
         public IActionResult AddUser(User obj)
         {
             obj.DateOfUserCreation = DateOnly.FromDateTime(DateTime.Now);
-            obj.TypeOfUser = 1;
             
                 _db.Users.Add(obj);
                 _db.SaveChanges();
