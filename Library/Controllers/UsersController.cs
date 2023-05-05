@@ -1,5 +1,6 @@
 ﻿using Library.Data;
 using Library.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Library.Controllers
@@ -7,7 +8,6 @@ namespace Library.Controllers
     public class UsersController : Controller
     {
         private readonly LibraryContext _db;
-
         public UsersController(LibraryContext db)
         {
             _db = db;
@@ -28,11 +28,11 @@ namespace Library.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult AddUser(User obj)
         {
+
             obj.DateOfUserCreation = DateOnly.FromDateTime(DateTime.Now);
-            
-                _db.Users.Add(obj);
-                _db.SaveChanges();
-                return RedirectToAction("Users");
+            _db.Users.Add(obj);
+            _db.SaveChanges();
+            return RedirectToAction("Users");
             
         }
     }

@@ -1,14 +1,27 @@
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Library.Data;
+using Library.Models;
+using Library.Validators;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var authenticationSettings = new AuthenticationSettings();
+
+builder.Services.Configure<AuthenticationSettings>(
+    builder.Configuration.GetSection("Authentication"));
+
 // Add services to the container.
+
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddDbContext<LibraryContext>(
     option => option.UseSqlServer(builder.Configuration.GetConnectionString("LibraryConnectionString"))
     );
+builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 
 
 var app = builder.Build();
