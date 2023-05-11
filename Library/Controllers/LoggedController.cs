@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Library.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication;
+using NuGet.Common;
 
 namespace Library.Controllers
 {
@@ -13,6 +15,13 @@ namespace Library.Controllers
             return View();
         }
 
-        
+        [HttpGet]
+        public IActionResult Logout()
+        {
+            Response.Cookies.Delete("token");
+            return RedirectToAction("Index", "Home");
+        }
+
+
     }
 }

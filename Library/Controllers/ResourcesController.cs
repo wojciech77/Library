@@ -1,9 +1,11 @@
 ﻿using Library.Data;
 using Library.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Library.Controllers
 {
+    [Authorize]
     public class ResourcesController : Controller
     {
         private readonly LibraryContext _db;
