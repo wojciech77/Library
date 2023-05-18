@@ -2,8 +2,13 @@
 
 namespace Library.Models
 {
+    
     public class User
     {
+        public User()
+        {
+            BorrowsCount = 0;
+        }
         public Guid Id { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
@@ -16,10 +21,12 @@ namespace Library.Models
         public Address? Address { get; set; }
 
         public List<Resource>? Resources { get; set; }
+        public int BorrowsCount { get; set; }
 
         public string? PasswordHash { get; set; }
         public virtual Role? Role { get; set; }
         public int RoleId { get; set; }
 
     }
+    
 }

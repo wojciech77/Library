@@ -1,0 +1,59 @@
+﻿@model IEnumerable<Resource>
+@{
+    ViewData["Title"] = "Resources";
+    Layout = "_Layout - logged";
+
+}
+
+<div class="container p-3">
+    <div class="row pt-4">
+        <div class="col-6">
+            <h2 class="text-primary">Resource list</h2>
+        </div>
+    </div>
+</div>
+
+<table class="table table-bordered table-striped" style="width:100%">
+    <thead>
+        <tr>
+            <th>
+                Title
+            </th>
+            <th>
+                Type
+            </th>
+            <th>
+                Category
+            </th>
+            <th>
+                Quantity
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var obj in Model)
+        {
+            <tr>
+                <td width="20%">
+                    @obj.Title
+                </td>
+                <td width="20%">
+                    @obj.Type
+                </td>
+                <td width="20%">
+                    @obj.Category
+                </td>
+                <td width="20%">
+                    @obj.Quantity
+                </td>
+                <td>
+                <div class="w-75 btn-group" role="group">
+                    <a asp-asp-controller="Resource" asp-action="Borrow" asp-route-itemid="@obj.Id"> <i class="bg-info bi-pencil-square"></i>Borrow</a>
+                </div>
+                </td>
+            </tr>
+            
+        }
+    </tbody>
+
+</table>

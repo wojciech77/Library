@@ -29,7 +29,8 @@ namespace Library.Controllers
             _passwordHasher = passwordHasher;
             _authenticationSettings = authenticationSettings;
         }
-         
+        
+        
         public IActionResult Index()
         {
             return View();
