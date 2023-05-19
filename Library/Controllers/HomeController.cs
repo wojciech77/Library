@@ -119,7 +119,16 @@ namespace Library.Controllers
                     IsEssential = true,
                     SameSite = SameSiteMode.None
                 });
+            if (user.RoleId == 2)
+            {
+                return RedirectToAction("ManagerView", "Logged");
 
+            }
+            if (user.RoleId == 3)
+            {
+                return RedirectToAction("AdminView", "Logged");
+
+            }
             return RedirectToAction("Index", "Logged");
         }
 

@@ -1,13 +1,18 @@
 ﻿using Library.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace Library.Data
 {
     public class LibraryContext : DbContext
     {
-        public LibraryContext(DbContextOptions<LibraryContext> options) : base(options)
-        {
 
+
+        private readonly IPasswordHasher<User> _passwordHasher;
+
+        public LibraryContext(DbContextOptions<LibraryContext> options, IPasswordHasher<User> passwordHasher) : base(options)
+        {
+            _passwordHasher = passwordHasher;
         }
         public DbSet<Address> Addresses { get; set; }
         public DbSet<User> Users { get; set; }
@@ -17,6 +22,8 @@ namespace Library.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
+            string ADMIN_ID = "B21EA37D-66D2-4C2C-D01C-08DB4A9AC978";
 
             modelBuilder.Entity<Role>()
                 .HasData(
@@ -37,6 +44,21 @@ namespace Library.Data
                         Name = "Admin"
                     }
                 );
+
+            var appUser = new User
+            {
+                Id = Guid.Parse(ADMIN_ID),
+                Email = "wojciech@gmail.com",
+                FirstName = "Admin",
+                LastName = "Nimda",
+                RoleId = 3
+            };
+            var hashedPassword = _passwordHasher.HashPassword(appUser, "Password");
+            appUser.PasswordHash = hashedPassword;
+
+
+            modelBuilder.Entity<User>()
+                .HasData(appUser);
 
             modelBuilder.Entity<User>(eb =>
             {

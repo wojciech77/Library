@@ -1,7 +1,7 @@
 ﻿@model IEnumerable<Resource>
 @{
     ViewData["Title"] = "Resources";
-    Layout = "_Layout - logged";
+    Layout = "_Layout - loggedManager";
 
 }
 
@@ -52,6 +52,16 @@
                 </td>
                 <td width="20%">
                     @obj.Quantity
+                </td>
+                <td>
+                    <div class="w-75 btn-group" role="group">
+                        <a asp-asp-controller="Resource" asp-action="EditResource" asp-route-id="@obj.Id"> <i class="bg-info bi-pencil-square"></i>Edit</a>
+                    </div>
+                </td>
+                <td>
+                    <div class="w-75 btn-group" role="group">
+                        <a asp-asp-controller="Resource" asp-action="DeleteResource" asp-route-id="@obj.Id"> <i class="bg-info bi-pencil-square"></i>Delete</a>
+                    </div>
                 </td>
             </tr>
         }

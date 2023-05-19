@@ -10,6 +10,11 @@
         <div class="col-6">
             <h2 class="text-primary">Resource list</h2>
         </div>
+        <div class="col-6">
+            <a asp-controller="Resources" asp-action="BorrowResources" class="btn btn-primary">
+                Confirmation
+            </a>
+        </div>
     </div>
 </div>
 
@@ -47,9 +52,9 @@
                     @obj.Quantity
                 </td>
                 <td>
-                <div class="w-75 btn-group" role="group">
-                    <a asp-asp-controller="Resource" asp-action="Borrow" asp-route-itemid="@obj.Id"> <i class="bg-info bi-pencil-square"></i>Borrow</a>
-                </div>
+                    <div class="w-75 btn-group" role="group">
+                        <a asp-asp-controller="Resource" asp-action="Borrow" asp-route-id="@obj.Id"> <i class="bg-info bi-pencil-square"></i>Borrow</a>
+                    </div>
                 </td>
             </tr>
             
