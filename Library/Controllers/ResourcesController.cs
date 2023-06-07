@@ -3,6 +3,7 @@ using Library.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using NuGet.Protocol;
 using System.Reflection.Metadata;
 using System.Security.Claims;
@@ -70,40 +71,51 @@ namespace Library.Controllers
         [Route("Borrow")]
         public IActionResult Borrow()
         {
+            var userId = Guid.Parse(HttpContext.User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value);
+            var borrow = new BorrowDto
+            {
+                UserId = userId,
+                Status = "Waiting for confirm",
+                ReturnDay = DateTime.Now.Date.AddDays(7),
+                Resources = new List<Resource>()
+            };
+            TempData["Borrow"] = JsonConvert.SerializeObject(borrow);
             IEnumerable<Resource> objResourcesList = _db.Resources.ToList();
             return View(objResourcesList);
         }
+
+
         [Authorize(Roles = "User")]
         [Route("Borrow/{id:int}")]
         public IActionResult Borrow(int id)
         {
-            var userId = Guid.Parse(HttpContext.User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value);
-            var resource = _db.Resources.Find(id);
-            var user = _db.Users.Include(u => u.Resources).Single(x => x.Id == userId);
+            //
+            //var resource = _db.Resources.Find(id);
+            //var user = _db.Users.Include(u => u.Resources).Single(x => x.Id == userId);
 
-            if (resource != null && user != null)
+           /* if (resource != null && user != null)
             {
                 user.Resources.Add(resource);
                 resource.Quantity -= 1;
                 _db.SaveChanges();
-            }
+            }*/
             return RedirectToAction(nameof(Borrow), new { id = string.Empty });
         }
-        [Authorize(Roles = "User")]
-        public IActionResult BorrowResources()
-        {
-            var userId = Guid.Parse(HttpContext.User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value);
-            var user = _db.Users.Include(u => u.Resources).FirstOrDefault(x => x.Id == userId);
+        //[Authorize(Roles = "User")]
+        //public IActionResult BorrowResources()
+        //{
+            //var userId = Guid.Parse(HttpContext.User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value);
+            //var user = _db.Users.Include(u => u.Resources).FirstOrDefault(x => x.Id == userId);
 
-            if (user == null)
+            /*if (user == null)
             {
                 // User not found, handle the error or redirect to an appropriate page
                 return NotFound();
             }
-
-            IEnumerable<Resource> objResourcesList = user.Resources;
-            return View(objResourcesList);
-        }
+            */
+            //IEnumerable<Resource> objResourcesList = user.Resources;
+            //return View(objResourcesList);
+        //}
 
 
         

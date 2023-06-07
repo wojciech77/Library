@@ -1,53 +1,51 @@
-﻿@model IEnumerable<Resource>
-@{
-    ViewData["Title"] = "Resources";
-    Layout = "_Layout - logged";
+﻿@model BorrowDto
 
+@{
+    ViewData["Title"] = "Borrow Resources";
+    Layout = "_Layout - logged";
 }
 
-<div class="container p-3">
-    <div class="row pt-4">
-        <div class="col-6">
-            <h2 class="text-primary">Resource list</h2>
-        </div>
-    </div>
-</div>
+<h2>Borrow Confirmation</h2>
 
+<h4>User Information:</h4>
+<p>User: @Model.UserId</p>
+<p>Status: @Model.Status</p>
+<p>Return Day: @Model.ReturnDay</p>
+
+<h4>Resources:</h4>
 <table class="table table-bordered table-striped" style="width:100%">
     <thead>
         <tr>
-            <th>
-                Title
-            </th>
-            <th>
-                Type
-            </th>
-            <th>
-                Category
-            </th>
-            <th>
-                Quantity
-            </th>
+            <th>Title</th>
+            <th>Type</th>
+            <th>Category</th>
+            <th>Quantity</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var obj in Model)
+        @foreach (var resource in Model.Resources)
         {
             <tr>
-                <td width="20%">
-                    @obj.Title
-                </td>
-                <td width="20%">
-                    @obj.Type
-                </td>
-                <td width="20%">
-                    @obj.Category
-                </td>
-                <td width="20%">
-                    @obj.Quantity
-                </td>
+                <td>@resource.Title</td>
+                <td>@resource.Type</td>
+                <td>@resource.Category</td>
+                <td>@resource.Quantity</td>
             </tr>
         }
     </tbody>
-
 </table>
+
+<form method="post" action="/Borrow/AddToDatabase">
+    @Html.AntiForgeryToken()
+
+    <input type="hidden" asp-for="UserId" />
+    <input type="hidden" asp-for="Status" />
+    <input type="hidden" asp-for="ReturnDay" />
+
+    @foreach (var resource in Model.Resources)
+    {
+        <input type="hidden" name="Resources.Index" value="@resource.Id" />
+    }
+
+    <button type="submit" class="btn btn-primary">Confirm Borrow</button>
+</form>

@@ -18,6 +18,7 @@ namespace Library.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Resource> Resources { get; set; }
         public DbSet<Role> Roles { get; set; }
+        public DbSet<BorrowDto> Borrows { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -68,11 +69,9 @@ namespace Library.Data
                 .WithOne(a => a.User)
                 .HasForeignKey<Address>(a => a.UserId);
 
-                eb.HasMany(u => u.Resources)
-                .WithMany(r => r.Users);
-
-                
-
+                eb.HasMany(u => u.Borrows)
+                .WithOne(b => b.User)
+                .HasForeignKey(b => b.UserId);
             });
 
 

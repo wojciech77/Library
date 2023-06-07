@@ -19,8 +19,7 @@ namespace Library.Models
         public string? PersonalIdNumber { get; set; }
 
         public Address? Address { get; set; }
-
-        public List<Resource>? Resources { get; set; }
+        public List<BorrowDto> Borrows { get; set; }
         public int BorrowsCount { get; set; }
 
         public string? PasswordHash { get; set; }
