@@ -49,6 +49,8 @@ builder.Services.AddAuthentication(options =>
     };
 });
 builder.Services.AddControllersWithViews();
+builder.Services.AddSession();
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddDbContext<LibraryContext>(
     option => option.UseSqlServer(builder.Configuration.GetConnectionString("LibraryConnectionString"))
@@ -69,6 +71,7 @@ if (!app.Environment.IsDevelopment())
 app.UseAuthentication();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.UseSession();
 
 app.UseRouting();
 app.UseCookiePolicy();

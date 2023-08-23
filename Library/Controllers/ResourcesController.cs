@@ -1,6 +1,7 @@
 ﻿using Library.Data;
 using Library.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -10,15 +11,17 @@ using System.Security.Claims;
 
 namespace Library.Controllers
 {
-    
+
     public class ResourcesController : Controller
     {
         private readonly LibraryContext _db;
-        
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private ISession _session => _httpContextAccessor.HttpContext.Session;
 
-        public ResourcesController(LibraryContext db)
+        public ResourcesController(LibraryContext db, IHttpContextAccessor httpContextAccessor)
         {
             _db = db;
+            _httpContextAccessor = httpContextAccessor;
         }
         [Authorize]
         public IActionResult Resources()
@@ -67,57 +70,104 @@ namespace Library.Controllers
             _db.SaveChanges();
             return RedirectToAction("Resources");
         }
+
+
+
+
         [Authorize(Roles = "User")]
         [Route("Borrow")]
         public IActionResult Borrow()
         {
-            var userId = Guid.Parse(HttpContext.User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value);
-            var borrow = new BorrowDto
+            var borrowJson = HttpContext.Session.GetString("Borrow");
+            var borrow = borrowJson != null ? JsonConvert.DeserializeObject<BorrowDto>(borrowJson) : null;
+
+            if (borrow == null)
             {
-                UserId = userId,
-                Status = "Waiting for confirm",
-                ReturnDay = DateTime.Now.Date.AddDays(7),
-                Resources = new List<Resource>()
-            };
-            TempData["Borrow"] = JsonConvert.SerializeObject(borrow);
+                var userId = Guid.Parse(HttpContext.User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value);
+                borrow = new BorrowDto
+                {
+                    UserId = userId,
+                    Status = "Waiting for confirm",
+                    ReturnDay = DateTime.Now.Date.AddDays(7),
+                    Resources = new List<Resource>()
+                };
+                HttpContext.Session.SetString("Borrow", JsonConvert.SerializeObject(borrow));
+            }
+
             IEnumerable<Resource> objResourcesList = _db.Resources.ToList();
             return View(objResourcesList);
         }
-
 
         [Authorize(Roles = "User")]
         [Route("Borrow/{id:int}")]
         public IActionResult Borrow(int id)
         {
-            //
-            //var resource = _db.Resources.Find(id);
-            //var user = _db.Users.Include(u => u.Resources).Single(x => x.Id == userId);
+            var resource = _db.Resources.Find(id);
 
-           /* if (resource != null && user != null)
+            // Retrieve the serialized BorrowDto from session
+            var borrowJson = HttpContext.Session.GetString("Borrow");
+            var borrow = borrowJson != null ? JsonConvert.DeserializeObject<BorrowDto>(borrowJson) : null;
+
+            if (resource != null && borrow != null)
             {
-                user.Resources.Add(resource);
+                borrow.Resources.Add(resource);
                 resource.Quantity -= 1;
-                _db.SaveChanges();
-            }*/
+            }
+
+            // Serialize and store the updated BorrowDto back to session
+            HttpContext.Session.SetString("Borrow", JsonConvert.SerializeObject(borrow));
+
             return RedirectToAction(nameof(Borrow), new { id = string.Empty });
         }
-        //[Authorize(Roles = "User")]
-        //public IActionResult BorrowResources()
-        //{
-            //var userId = Guid.Parse(HttpContext.User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value);
-            //var user = _db.Users.Include(u => u.Resources).FirstOrDefault(x => x.Id == userId);
 
-            /*if (user == null)
+        [Authorize(Roles = "User")]
+        public IActionResult BorrowResources()
+        {
+            var userId = Guid.Parse(HttpContext.User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value);
+            var user = _db.Users.Include(u => u.Borrows).FirstOrDefault(u => u.Id == userId);
+
+            if (user == null)
             {
-                // User not found, handle the error or redirect to an appropriate page
                 return NotFound();
             }
-            */
-            //IEnumerable<Resource> objResourcesList = user.Resources;
-            //return View(objResourcesList);
-        //}
+            var borrowJson = HttpContext.Session.GetString("Borrow");
+            var borrow = borrowJson != null ? JsonConvert.DeserializeObject<BorrowDto>(borrowJson) : null;
+            user.Borrows.Add(borrow);
+            HttpContext.Session.Remove("Borrow"); 
+            var userJson = JsonConvert.SerializeObject(user, new JsonSerializerSettings
+            {
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+            });
+            HttpContext.Session.SetString("User", userJson);
+            IEnumerable<BorrowDto> objBorrows = user.Borrows.ToList();
+            return View(objBorrows);
+        }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult AddToDatabase()
+        {
+            var userJson = HttpContext.Session.GetString("User");
 
-        
+            var user = JsonConvert.DeserializeObject<User>(userJson, new JsonSerializerSettings
+            {
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+            });
+
+            if (user != null)
+            {
+                
+                _db.Users.Update(user);
+                HttpContext.Session.Remove("User");
+                // Redirect to a success page or perform any other desired action
+                return RedirectToAction("Confirmation");
+            }
+            HttpContext.Session.Remove("User");
+            // Handle the case when the user is not found or other error occurs
+            // ...
+
+            return View("Error");
+        }
+
     }
 }

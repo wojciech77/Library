@@ -1,51 +1,56 @@
-﻿@model BorrowDto
+﻿@model IEnumerable<BorrowDto>
 
 @{
     ViewData["Title"] = "Borrow Resources";
     Layout = "_Layout - logged";
 }
 
+
+
 <h2>Borrow Confirmation</h2>
 
-<h4>User Information:</h4>
-<p>User: @Model.UserId</p>
-<p>Status: @Model.Status</p>
-<p>Return Day: @Model.ReturnDay</p>
+<div class="container p-3">
+    <div class="row pt-4">
+        
+        <div class="col-6">
+            <a asp-controller="Resources" asp-action="AddToDatabase" class="btn btn-primary">
+                AddToDatabase
+            </a>
+        </div>
+    </div>
+</div>
 
-<h4>Resources:</h4>
-<table class="table table-bordered table-striped" style="width:100%">
-    <thead>
-        <tr>
-            <th>Title</th>
-            <th>Type</th>
-            <th>Category</th>
-            <th>Quantity</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var resource in Model.Resources)
-        {
+@foreach (var borrow in Model)
+{
+    <h4>User Information:</h4>
+    <p>User: @borrow.UserId</p>
+    <p>Status: @borrow.Status</p>
+    <p>Return Day: @borrow.ReturnDay</p>
+
+    <h4>Resources:</h4>
+    <table class="table table-bordered table-striped" style="width:100%">
+        <thead>
             <tr>
-                <td>@resource.Title</td>
-                <td>@resource.Type</td>
-                <td>@resource.Category</td>
-                <td>@resource.Quantity</td>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Category</th>
+                <th>Quantity</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var resource in borrow.Resources)
+            {
+                <tr>
+                    <td>@resource.Title</td>
+                    <td>@resource.Type</td>
+                    <td>@resource.Category</td>
+                    <td>@resource.Quantity</td>
+                </tr>
+            }
+        </tbody>
+    </table>
 
-<form method="post" action="/Borrow/AddToDatabase">
-    @Html.AntiForgeryToken()
+    
 
-    <input type="hidden" asp-for="UserId" />
-    <input type="hidden" asp-for="Status" />
-    <input type="hidden" asp-for="ReturnDay" />
-
-    @foreach (var resource in Model.Resources)
-    {
-        <input type="hidden" name="Resources.Index" value="@resource.Id" />
-    }
-
-    <button type="submit" class="btn btn-primary">Confirm Borrow</button>
-</form>
+    <hr />
+}

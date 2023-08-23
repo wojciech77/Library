@@ -9,7 +9,6 @@
         public string Type { get; set; }
         public string Category { get; set; }
 
-        public List<User> Users { get; set; }
 
     }
 }
