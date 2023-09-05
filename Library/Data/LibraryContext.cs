@@ -80,6 +80,10 @@ namespace Library.Data
                 .Property(r => r.Title)
                 .IsRequired();
 
+            modelBuilder.Entity<BorrowDto>()
+                .HasMany(b => b.Resources)
+                .WithOne(r => r.BorrowDto);
+
             modelBuilder.Entity<Address>()
                 .Property(a => a.Street).IsRequired();
 
