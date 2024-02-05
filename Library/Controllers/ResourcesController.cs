@@ -43,9 +43,13 @@ namespace Library.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult AddResource(Resource obj)
         {
-            _db.Resources.Add(obj);
-            _db.SaveChanges();
-            return RedirectToAction("Resources");
+            if(ModelState.IsValid)
+            {
+                _db.Resources.Add(obj);
+                _db.SaveChanges();
+                return RedirectToAction("Resources");
+            }
+            return RedirectToAction("AddResource");
 
         }
         [Authorize(Roles = "Admin, Manager")]

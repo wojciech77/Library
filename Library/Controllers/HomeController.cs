@@ -75,61 +75,55 @@ namespace Library.Controllers
         public IActionResult Login(LoginDto dto)
         {
             
-            if (dto.Email is null || dto.Password is null)
+            if(ModelState.IsValid)
             {
-                throw new BadHttpRequestException("Invalid username of password");
-            }
-
-            var user = _db.Users
+                var user = _db.Users
                 .Include(u => u.Role)
                 .FirstOrDefault(u => u.Email == dto.Email);
-            if(user is null)
-            {
-                throw new BadHttpRequestException("Invalid username or password");
-            }
-            var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, dto.Password);
-            if(result == PasswordVerificationResult.Failed)
-            {
-                throw new BadHttpRequestException("Invalid username of password");
-            }
-            var claims = new List<Claim>()
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
-                new Claim(ClaimTypes.Role, $"{user.Role.Name}"),
-            };
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_authenticationSettings.JwtKey));
-            var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var expires = DateTime.Now.AddDays(_authenticationSettings.JwtExpireDays);
-
-            var token = new JwtSecurityToken(_authenticationSettings.JwtIssuer,
-                _authenticationSettings.JwtIssuer,
-                claims,
-                expires: expires,
-                signingCredentials: cred);
-
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var returnToken = tokenHandler.WriteToken(token);
-            HttpContext.Response.Cookies.Append("token", returnToken,
-                new CookieOptions
+                var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, dto.Password);
+                
+                var claims = new List<Claim>()
                 {
-                    Expires = DateTime.Now.AddDays(7),
-                    HttpOnly = true,
-                    Secure = true,
-                    IsEssential = true,
-                    SameSite = SameSiteMode.None
-                });
-            if (user.RoleId == 2)
-            {
-                return RedirectToAction("ManagerView", "Logged");
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                    new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
+                    new Claim(ClaimTypes.Role, $"{user.Role.Name}"),
+                };
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_authenticationSettings.JwtKey));
+                var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+                var expires = DateTime.Now.AddDays(_authenticationSettings.JwtExpireDays);
+
+                var token = new JwtSecurityToken(_authenticationSettings.JwtIssuer,
+                    _authenticationSettings.JwtIssuer,
+                    claims,
+                    expires: expires,
+                    signingCredentials: cred);
+
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var returnToken = tokenHandler.WriteToken(token);
+                HttpContext.Response.Cookies.Append("token", returnToken,
+                    new CookieOptions
+                    {
+                        Expires = DateTime.Now.AddDays(7),
+                        HttpOnly = true,
+                        Secure = true,
+                        IsEssential = true,
+                        SameSite = SameSiteMode.None
+                    });
+                if (user.RoleId == 2)
+                {
+                    return RedirectToAction("ManagerView", "Logged");
+
+                }
+                if (user.RoleId == 3)
+                {
+                    return RedirectToAction("AdminView", "Logged");
+
+                }
+                return RedirectToAction("Index", "Logged");
 
             }
-            if (user.RoleId == 3)
-            {
-                return RedirectToAction("AdminView", "Logged");
+            return View("Login");
 
-            }
-            return RedirectToAction("Index", "Logged");
         }
 
 
