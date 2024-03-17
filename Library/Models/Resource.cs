@@ -9,8 +9,7 @@
         public string Type { get; set; }
         public string Category { get; set; }
 
-        public BorrowDto BorrowDto { get; set; }
-        public int BorrowDtoId { get; set; }
+        
 
 
     }

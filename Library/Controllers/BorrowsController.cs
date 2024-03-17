@@ -134,5 +134,23 @@ namespace Library.Controllers
             IEnumerable<BorrowDto> objBorrows = user.Borrows.ToList();
             return View(objBorrows);
         }
+
+        [Authorize(Roles = "Admin, Manager")]
+        public IActionResult UsersBorrows()
+        {
+            IEnumerable<BorrowDto> objUsersBorrowsList = _db.Borrows;
+            return View(objUsersBorrowsList);
+        }
+        [Authorize(Roles = "Admin, Manager")]
+        public IActionResult DeleteBorrow(int id)
+        {
+            var borrow = _db.Borrows.Find(id);
+            borrow.Resources = null;
+            _db.Borrows.Update(borrow);
+            _db.SaveChanges();
+            _db.Borrows.Remove(borrow);
+            _db.SaveChanges();
+            return RedirectToAction("UsersBorrows");
+        }
     }
 }
