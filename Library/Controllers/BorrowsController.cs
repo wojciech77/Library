@@ -33,10 +33,8 @@ namespace Library.Controllers
 
             if (borrow == null)
             {
-                var userId = Guid.Parse(HttpContext.User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value);
                 borrow = new BorrowDto
                 {
-                    UserId = userId,
                     Status = "Waiting for confirm by user",
                     ReturnDay = DateTime.Now.Date.AddDays(7),
                     Resources = new List<Resource>()
@@ -62,6 +60,8 @@ namespace Library.Controllers
             {
                 borrow.Resources.Add(resource);
                 resource.Quantity -= 1;
+                _db.Resources.Update(resource);
+                _db.SaveChanges();
             }
 
             // Serialize and store the updated BorrowDto back to session
@@ -83,44 +83,14 @@ namespace Library.Controllers
             var borrowJson = HttpContext.Session.GetString("Borrow");
             var borrow = borrowJson != null ? JsonConvert.DeserializeObject<BorrowDto>(borrowJson) : null;
             user.Borrows.Add(borrow);
-            var userJson = JsonConvert.SerializeObject(user, new JsonSerializerSettings
-            {
-                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-            });
-            HttpContext.Session.SetString("User", userJson);
-            IEnumerable<BorrowDto> objBorrows = user.Borrows.ToList();
-            return View(objBorrows);
+            _db.Users.Update(user);
+            _db.SaveChanges();
+            HttpContext.Session.Remove("Borrow");
+            return RedirectToAction("Borrowed");
         }
         
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult AddToDatabase()
-        {
-            var userJson = HttpContext.Session.GetString("User");
 
-            var user = JsonConvert.DeserializeObject<User>(userJson, new JsonSerializerSettings
-            {
-                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-            });
-
-            if (user != null)
-            {
-
-                _db.Users.Update(user);
-                HttpContext.Session.Remove("User");
-                HttpContext.Session.Remove("Borrow");
-                // Redirect to a success page or perform any other desired action
-                return RedirectToAction("Borrowed");
-            }
-
-            HttpContext.Session.Remove("Borrow");
-            HttpContext.Session.Remove("User");
-            // Handle the case when the user is not found or other error occurs
-            // ...
-
-            return View("Error");
-        }
 
         public IActionResult Borrowed()
         {
@@ -138,19 +108,30 @@ namespace Library.Controllers
         [Authorize(Roles = "Admin, Manager")]
         public IActionResult UsersBorrows()
         {
-            IEnumerable<BorrowDto> objUsersBorrowsList = _db.Borrows;
-            return View(objUsersBorrowsList);
+            var usersWithBorrows = _db.Users
+                .Include(u => u.Borrows)
+                    .ThenInclude(b => b.Resources);
+
+            var userBorrowsList = new List<(string UserName, IEnumerable<BorrowDto> Borrows)>();
+
+            foreach (var user in usersWithBorrows)
+            {
+                var userBorrows = (UserName: $"{user.FirstName} {user.LastName}", Borrows: user.Borrows);
+                userBorrowsList.Add(userBorrows);
+            }
+
+            return View(userBorrowsList);
         }
+
+
         [Authorize(Roles = "Admin, Manager")]
         public IActionResult DeleteBorrow(int id)
         {
             var borrow = _db.Borrows.Find(id);
-            borrow.Resources = null;
-            _db.Borrows.Update(borrow);
-            _db.SaveChanges();
             _db.Borrows.Remove(borrow);
             _db.SaveChanges();
             return RedirectToAction("UsersBorrows");
         }
     }
+
 }

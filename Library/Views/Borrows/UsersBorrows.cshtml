@@ -1,44 +1,47 @@
-﻿@model IEnumerable<BorrowDto>
+﻿@model IEnumerable<(string UserName, IEnumerable<BorrowDto> Borrows)>
 
 @{
-    ViewData["Title"] = "Borrow Resources";
+    ViewData["Title"] = "Users Borrows";
     Layout = "_Layout - logged";
 }
 
-
-
-@foreach (var borrow in Model)
+@foreach (var userBorrows in Model)
 {
-    <h4>User Information:</h4>
-    <p>User: @borrow.UserId</p>
-    <p>Status: @borrow.Status</p>
-    <p>Return Day: @borrow.ReturnDay</p>
+    <h2>@userBorrows.UserName</h2>
 
-    <td>
-        <div class="w-75 btn-group" role="group">
-            <a asp-asp-controller="Resources" asp-action="DeleteBorrow" asp-route-id="@borrow.Id"> <i class="bg-info bi-pencil-square"></i>Delete</a>
-        </div>
-    </td>
+    @foreach (var borrow in userBorrows.Borrows)
+    {
+        <h4>Borrow Information:</h4>
+        <p>Status: @borrow.Status</p>
+        <p>Return Day: @borrow.ReturnDay</p>
 
-    <h4>Resources:</h4>
-    <table class="table table-bordered table-striped" style="width:100%">
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Type</th>
-                <th>Category</th>
-                <th>Quantity</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var resource in borrow.Resources)
-            {
+        <td>
+            <div class="w-75 btn-group" role="group">
+                <a asp-asp-controller="Borrows" asp-action="DeleteBorrow" asp-route-id="@borrow.Id"> <i class="bg-info bi-pencil-square"></i>Delete</a>
+            </div>
+        </td>
+
+        <h4>Resources:</h4>
+        <table class="table table-bordered table-striped">
+            <thead>
                 <tr>
-                    <td>@resource.Title</td>
-                    <td>@resource.Type</td>
-                    <td>@resource.Category</td>
+                    <th>Title</th>
+                    <th>Type</th>
+                    <th>Category</th>
+                    <th>Quantity</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var resource in borrow.Resources)
+                {
+                    <tr>
+                        <td>@resource.Title</td>
+                        <td>@resource.Type</td>
+                        <td>@resource.Category</td>
+                        <td>@resource.Quantity</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
 }

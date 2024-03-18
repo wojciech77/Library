@@ -66,13 +66,15 @@ namespace Library.Data
                 eb.Property(u => u.FirstName).IsRequired();
 
                 eb.HasOne(u => u.Address)
-                .WithOne(a => a.User)
-                .HasForeignKey<Address>(a => a.UserId);
+                    .WithOne(a => a.User)
+                    .HasForeignKey<Address>(a => a.UserId);
 
-                eb.HasMany(u => u.Borrows)
-                .WithOne(b => b.User)
-                .HasForeignKey(b => b.UserId);
+                
+                eb.HasMany(u => u.Borrows)               
+                    .WithOne(b => b.User)                
+                    .HasForeignKey(b => b.UserId);       
             });
+
 
 
 

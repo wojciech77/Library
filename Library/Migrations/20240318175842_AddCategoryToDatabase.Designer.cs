@@ -4,6 +4,7 @@ using Library.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Library.Migrations
 {
     [DbContext(typeof(LibraryContext))]
-    partial class LibraryContextModelSnapshot : ModelSnapshot
+    [Migration("20240318175842_AddCategoryToDatabase")]
+    partial class AddCategoryToDatabase
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -69,14 +72,14 @@ namespace Library.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid?>("UserId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Borrows");
+                    b.ToTable("BorrowDto");
                 });
 
             modelBuilder.Entity("Library.Models.Resource", b =>
@@ -203,7 +206,7 @@ namespace Library.Migrations
                             Email = "wojciech@gmail.com",
                             FirstName = "Admin",
                             LastName = "Nimda",
-                            PasswordHash = "AQAAAAEAACcQAAAAECqb53oROIGPldGuDy1slaTMsCkNyv4rS8vQmIeIBCfkizQ1YJ/G+MzIMEjU5OywCQ==",
+                            PasswordHash = "AQAAAAEAACcQAAAAEN2loDvJphiILDJe4bQ2/DsKiZUtVF89G6uaL1BQG2WtxCNKsRkHPW4CzcqrRAirFA==",
                             RoleId = 3
                         });
                 });
@@ -221,13 +224,9 @@ namespace Library.Migrations
 
             modelBuilder.Entity("Library.Models.BorrowDto", b =>
                 {
-                    b.HasOne("Library.Models.User", "User")
+                    b.HasOne("Library.Models.User", null)
                         .WithMany("Borrows")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
+                        .HasForeignKey("UserId");
                 });
 
             modelBuilder.Entity("Library.Models.Resource", b =>
