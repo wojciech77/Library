@@ -4,6 +4,7 @@ using Library.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Library.Migrations
 {
     [DbContext(typeof(LibraryContext))]
-    partial class LibraryContextModelSnapshot : ModelSnapshot
+    [Migration("20240319174103_RemoveBorrowDtoIdColumn")]
+    partial class RemoveBorrowDtoIdColumn
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,21 +24,6 @@ namespace Library.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("BorrowDtoResource", b =>
-                {
-                    b.Property<int>("BorrowsId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ResourcesId")
-                        .HasColumnType("int");
-
-                    b.HasKey("BorrowsId", "ResourcesId");
-
-                    b.HasIndex("ResourcesId");
-
-                    b.ToTable("BorrowDtoResource");
-                });
 
             modelBuilder.Entity("Library.Models.Address", b =>
                 {
@@ -94,21 +82,6 @@ namespace Library.Migrations
                     b.ToTable("Borrows");
                 });
 
-            modelBuilder.Entity("Library.Models.BorrowDtoResources", b =>
-                {
-                    b.Property<int>("BorrowDtoId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ResourceId")
-                        .HasColumnType("int");
-
-                    b.HasKey("BorrowDtoId", "ResourceId");
-
-                    b.HasIndex("ResourceId");
-
-                    b.ToTable("BorrowDtoResources");
-                });
-
             modelBuilder.Entity("Library.Models.Resource", b =>
                 {
                     b.Property<int>("Id")
@@ -116,6 +89,9 @@ namespace Library.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("BorrowDtoId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Category")
                         .IsRequired()
@@ -136,6 +112,8 @@ namespace Library.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BorrowDtoId");
 
                     b.ToTable("Resources");
                 });
@@ -228,24 +206,9 @@ namespace Library.Migrations
                             Email = "wojciech@gmail.com",
                             FirstName = "Admin",
                             LastName = "Nimda",
-                            PasswordHash = "AQAAAAEAACcQAAAAEHoefYXiLubLL86CIhGcgnzvcBP41W1jf/R24Tn4B4dGPgiJwpGwuCaGQbEsKt57SQ==",
+                            PasswordHash = "AQAAAAEAACcQAAAAEGIL47FO1llhhDCWnhNlzVCkNb2ePK2GNBFPRsIoy3/bB4ndD7LD4lqIEvWl0zJCKw==",
                             RoleId = 3
                         });
-                });
-
-            modelBuilder.Entity("BorrowDtoResource", b =>
-                {
-                    b.HasOne("Library.Models.BorrowDto", null)
-                        .WithMany()
-                        .HasForeignKey("BorrowsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Library.Models.Resource", null)
-                        .WithMany()
-                        .HasForeignKey("ResourcesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Library.Models.Address", b =>
@@ -270,23 +233,11 @@ namespace Library.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Library.Models.BorrowDtoResources", b =>
+            modelBuilder.Entity("Library.Models.Resource", b =>
                 {
-                    b.HasOne("Library.Models.BorrowDto", "BorrowDto")
-                        .WithMany()
-                        .HasForeignKey("BorrowDtoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Library.Models.Resource", "Resource")
-                        .WithMany()
-                        .HasForeignKey("ResourceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("BorrowDto");
-
-                    b.Navigation("Resource");
+                    b.HasOne("Library.Models.BorrowDto", null)
+                        .WithMany("Resources")
+                        .HasForeignKey("BorrowDtoId");
                 });
 
             modelBuilder.Entity("Library.Models.User", b =>
@@ -298,6 +249,11 @@ namespace Library.Migrations
                         .IsRequired();
 
                     b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("Library.Models.BorrowDto", b =>
+                {
+                    b.Navigation("Resources");
                 });
 
             modelBuilder.Entity("Library.Models.User", b =>

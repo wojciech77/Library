@@ -9,7 +9,7 @@
         public string Type { get; set; }
         public string Category { get; set; }
 
-        
+        public List<BorrowDto> Borrows { get; set; } = new List<BorrowDto> { };
 
 
     }

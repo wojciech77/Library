@@ -1,4 +1,4 @@
-﻿@model IEnumerable<(string UserName, IEnumerable<BorrowDto> Borrows)>
+﻿@model IEnumerable<(Guid UserId, string UserName, IEnumerable<BorrowDto> Borrows)>
 
 @{
     ViewData["Title"] = "Users Borrows";
@@ -17,7 +17,7 @@
 
         <td>
             <div class="w-75 btn-group" role="group">
-                <a asp-asp-controller="Borrows" asp-action="DeleteBorrow" asp-route-id="@borrow.Id"> <i class="bg-info bi-pencil-square"></i>Delete</a>
+                <a asp-controller="Borrows" asp-action="DeleteBorrow" asp-route-userId="@userBorrows.UserId" asp-route-borrowId="@borrow.Id"> <i class="bg-info bi-pencil-square"></i>Delete</a>
             </div>
         </td>
 
@@ -45,3 +45,4 @@
         </table>
     }
 }
+

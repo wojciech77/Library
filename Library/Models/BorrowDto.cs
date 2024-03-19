@@ -6,7 +6,7 @@ namespace Library.Models
     {
         public int Id { get; set; }
         public string Status { get; set; }
-        public List<Resource> Resources { get; set; } = new List<Resource> { };
+        
         public DateTime ReturnDay { get; set; }
 
         // Foreign key property
@@ -14,5 +14,8 @@ namespace Library.Models
 
         // Navigation property
         public User User { get; set; }
+
+
+        public List<Resource> Resources { get; set; } = new List<Resource> { };
     }
 }

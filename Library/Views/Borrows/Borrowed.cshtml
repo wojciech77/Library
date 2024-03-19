@@ -7,23 +7,13 @@
 
 
 
-<h2>Borrow Confirmation</h2>
+<h2>Borrowed and waiting for collect</h2>
 
-<div class="container p-3">
-    <div class="row pt-4">
-        
-        <div class="col-6">
-            <a asp-controller="Resources" asp-action="AddToDatabase" class="btn btn-primary">
-                AddToDatabase
-            </a>
-        </div>
-    </div>
-</div>
+
 
 @foreach (var borrow in Model)
 {
-    <h4>User Information:</h4>
-    //<p>User: @borrow.UserId</p>
+    <h4>Information:</h4>
     <p>Status: @borrow.Status</p>
     <p>Return Day: @borrow.ReturnDay</p>
 
@@ -34,7 +24,6 @@
                 <th>Title</th>
                 <th>Type</th>
                 <th>Category</th>
-                <th>Quantity</th>
             </tr>
         </thead>
         <tbody>
@@ -44,7 +33,6 @@
                     <td>@resource.Title</td>
                     <td>@resource.Type</td>
                     <td>@resource.Category</td>
-                    <td>@resource.Quantity</td>
                 </tr>
             }
         </tbody>

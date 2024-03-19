@@ -95,7 +95,10 @@ namespace Library.Controllers
         public IActionResult Borrowed()
         {
             var userId = Guid.Parse(HttpContext.User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value);
-            var user = _db.Users.Include(u => u.Borrows).FirstOrDefault(u => u.Id == userId);
+            var user = _db.Users
+                   .Include(u => u.Borrows)
+                       .ThenInclude(b => b.Resources)  // Załaduj relację Resources dla każdego BorrowDto
+                   .FirstOrDefault(u => u.Id == userId);
 
             if (user == null)
             {
@@ -112,11 +115,11 @@ namespace Library.Controllers
                 .Include(u => u.Borrows)
                     .ThenInclude(b => b.Resources);
 
-            var userBorrowsList = new List<(string UserName, IEnumerable<BorrowDto> Borrows)>();
+            var userBorrowsList = new List<(Guid Id, string UserName, IEnumerable<BorrowDto> Borrows)>();
 
             foreach (var user in usersWithBorrows)
             {
-                var userBorrows = (UserName: $"{user.FirstName} {user.LastName}", Borrows: user.Borrows);
+                var userBorrows = (Id: user.Id, UserName: $"{user.FirstName} {user.LastName}", Borrows: user.Borrows);
                 userBorrowsList.Add(userBorrows);
             }
 
@@ -125,11 +128,23 @@ namespace Library.Controllers
 
 
         [Authorize(Roles = "Admin, Manager")]
-        public IActionResult DeleteBorrow(int id)
+        public IActionResult DeleteBorrow(Guid userId, int borrowId)
         {
-            var borrow = _db.Borrows.Find(id);
-            _db.Borrows.Remove(borrow);
-            _db.SaveChanges();
+            var user = _db.Users.Include(u => u.Borrows).FirstOrDefault(u => u.Id == userId);
+            if (user == null)
+            {
+                return NotFound(); // Jeśli użytkownik nie istnieje, zwracamy NotFound
+            }
+
+            var borrowToRemove = user.Borrows.FirstOrDefault(b => b.Id == borrowId);
+            if (borrowToRemove == null)
+            {
+                return NotFound(); // Jeśli nie znaleziono BorrowDto o podanym ID w liście Borrows użytkownika, zwracamy NotFound
+            }
+            
+            user.Borrows.Remove(borrowToRemove); // Usuwamy BorrowDto z listy Borrows
+
+            _db.SaveChanges(); // Zapisujemy zmiany
             return RedirectToAction("UsersBorrows");
         }
     }
