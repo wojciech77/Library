@@ -1,23 +1,45 @@
-﻿@model IEnumerable<Resource>
+﻿@model Library.ViewModels.BorrowViewModel
+
 @{
     ViewData["Title"] = "Resources";
     Layout = "_Layout - logged";
-
 }
 
 <div class="container p-3">
     <div class="row pt-4">
-        <div class="col-6">
-            <h2 class="text-primary">Resource list</h2>
-        </div>
-        <div class="col-6">
-            <a asp-controller="Borrows" asp-action="BorrowResources" class="btn btn-primary">
-                Confirmation
-            </a>
+        <div class="col-12">
+            @if (Model.Borrow.Resources.Any())
+            {
+                <h3>Resources to Borrow:</h3>
+                <ul>
+                    @foreach (var resource in Model.Borrow.Resources)
+                    {
+                        <li>@resource.Title</li>
+                    }
+                </ul>
+
+                <div class="col-12">
+                    <a asp-controller="Borrows" asp-action="CancelBorrow" class="btn btn-primary">
+                        Cancel
+                    </a>
+                    <a asp-controller="Borrows" asp-action="BorrowResources" class="btn btn-primary">
+                        Confirmation
+                    </a>
+                </div>
+            }
+            else
+            {
+                <p>No Borrow details available.</p>
+            }
+            @if (ViewData.ModelState.ContainsKey("ResourceBorrowed"))
+            {
+                <div class="text-danger">@Html.ValidationMessage("ResourceBorrowed")</div>
+            }
         </div>
     </div>
 </div>
 
+<h3>Resources:</h3>
 <table class="table table-bordered table-striped" style="width:100%">
     <thead>
         <tr>
@@ -36,8 +58,9 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var obj in Model)
+        @foreach (var obj in Model.Resources)
         {
+            var alreadyBorrowed = Model.Borrow.Resources.Any(r => r.Id == obj.Id);
             <tr>
                 <td width="20%">
                     @obj.Title
@@ -53,12 +76,20 @@
                 </td>
                 <td>
                     <div class="w-75 btn-group" role="group">
-                        <a asp-asp-controller="Borrows" asp-action="Borrow" asp-route-id="@obj.Id"> <i class="bg-info bi-pencil-square"></i>Borrow</a>
+                        @{
+                            if (obj.Quantity <= 0 || alreadyBorrowed)
+                            {
+                                <button type="button" class="btn btn-secondary" disabled>Borrow</button>
+                                
+                            }
+                            else
+                            {
+                                <a asp-asp-controller="Borrows" asp-action="Borrow" asp-route-id="@obj.Id" class="btn btn-primary">Borrow</a>
+                            }
+                        }
                     </div>
                 </td>
             </tr>
-            
         }
     </tbody>
-
 </table>

@@ -18,10 +18,17 @@
         </div>
         <div class="mb-3">
             <label asp-for="Password"></label>
-            <input asp-for="Password" class="form-control" />
+            <input asp-for="Password" class="form-control" type="password"  />
             <span asp-validation-for="Password" class="text-danger"></span>
         </div>
         <button type="submit" asp-controller="Home" asp-action="Login" class="btn btn-primary" style="width:150px">Login</button>
 
     </div>
 </form>
+
+@section Scripts{
+    @{
+        <partial name="_ValidationScriptsPartial" />
+    }
+
+}

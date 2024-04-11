@@ -1,8 +1,15 @@
 ﻿@model IEnumerable<User>
 @{
-    ViewData["Title"] = "Users";
-    Layout = "_Layout - loggedAdmin";
-
+    if (User.IsInRole("Manager"))
+    {
+        ViewData["Title"] = "Users";
+        Layout = "_Layout - loggedManager";
+    }
+    else if (User.IsInRole("Admin"))
+    {
+        ViewData["Title"] = "Users";
+        Layout = "_Layout - loggedAdmin";
+    }
 }
 
 
@@ -15,11 +22,6 @@
     <div class="row pt-4">
         <div class="col-6">
             <h2 class="text-primary">Resource list</h2>
-        </div>
-        <div class="col-6">
-            <a asp-controller="Users" asp-action="AddUser" class="btn btn-primary">
-                Create new user
-            </a>
         </div>
     </div>
 </div>
@@ -56,6 +58,16 @@
                 </td>
                 <td width="20%">
                     @obj.PhoneNumber
+                </td>
+                <td>
+                    <div class="w-75 btn-group" role="group">
+                        <a asp-asp-controller="Users" asp-action="EditUser" asp-route-id="@obj.Id"> <i class="bg-info bi-pencil-square"></i>Edit</a>
+                    </div>
+                </td>
+                <td>
+                    <div class="w-75 btn-group" role="group">
+                        <a asp-asp-controller="Users" asp-action="DeleteUser" asp-route-id="@obj.Id"> <i class="bg-info bi-pencil-square"></i>Delete</a>
+                    </div>
                 </td>
             </tr>
         }

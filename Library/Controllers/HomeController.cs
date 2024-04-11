@@ -40,28 +40,41 @@ namespace Library.Controllers
         {
             return View();
         }
-        
+
         //POST
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Register(RegisterDto dto)
         {
-            var newUser = new User()
+            if (ModelState.IsValid)
+            {
+                var newUser = new User()
                 {
-                Email = dto.Email,
-                FirstName = String.Empty,
-                LastName = String.Empty,
-                RoleId = 1,
-                DateOfBirth = new DateOnly(1900, 01, 01),
-                PersonalIdNumber = String.Empty,
-                PhoneNumber = String.Empty,
-                DateOfUserCreation = DateOnly.FromDateTime(DateTime.Now),
+                    Email = dto.Email,
+                    FirstName = String.Empty,
+                    LastName = String.Empty,
+                    RoleId = 1,
+                    DateOfBirth = new DateOnly(1900, 01, 01),
+                    PersonalIdNumber = String.Empty,
+                    PhoneNumber = String.Empty,
+                    DateOfUserCreation = DateOnly.FromDateTime(DateTime.Now),
                 };
                 var hashedPassword = _passwordHasher.HashPassword(newUser, dto.Password);
                 newUser.PasswordHash = hashedPassword;
                 _db.Users.Add(newUser);
                 _db.SaveChanges();
-            return RedirectToAction("Login");
+                return RedirectToAction("Login");
+            }
+            else
+            {
+                
+                if (ModelState.TryGetValue("Email", out var entry) && entry.Errors.Any(e => e.ErrorMessage == "That email is taken"))
+                {
+                    ModelState.AddModelError("Email", "That email is taken. Please choose a different email.");
+                }
+
+                return View("Register", dto);
+            }
         }
 
         public IActionResult Login()
@@ -81,48 +94,55 @@ namespace Library.Controllers
                 .Include(u => u.Role)
                 .FirstOrDefault(u => u.Email == dto.Email);
                 var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, dto.Password);
-                
-                var claims = new List<Claim>()
+                if (result == PasswordVerificationResult.Success)
+                {
+                    var claims = new List<Claim>()
                 {
                     new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                     new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
                     new Claim(ClaimTypes.Role, $"{user.Role.Name}"),
                 };
-                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_authenticationSettings.JwtKey));
-                var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-                var expires = DateTime.Now.AddDays(_authenticationSettings.JwtExpireDays);
+                    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_authenticationSettings.JwtKey));
+                    var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+                    var expires = DateTime.Now.AddDays(_authenticationSettings.JwtExpireDays);
 
-                var token = new JwtSecurityToken(_authenticationSettings.JwtIssuer,
-                    _authenticationSettings.JwtIssuer,
-                    claims,
-                    expires: expires,
-                    signingCredentials: cred);
+                    var token = new JwtSecurityToken(_authenticationSettings.JwtIssuer,
+                        _authenticationSettings.JwtIssuer,
+                        claims,
+                        expires: expires,
+                        signingCredentials: cred);
 
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var returnToken = tokenHandler.WriteToken(token);
-                HttpContext.Response.Cookies.Append("token", returnToken,
-                    new CookieOptions
-                    {
-                        Expires = DateTime.Now.AddDays(7),
-                        HttpOnly = true,
-                        Secure = true,
-                        IsEssential = true,
-                        SameSite = SameSiteMode.None
-                    });
-                if (user.RoleId == 2)
-                {
-                    return RedirectToAction("ManagerView", "Logged");
+                    var tokenHandler = new JwtSecurityTokenHandler();
+                    var returnToken = tokenHandler.WriteToken(token);
+                    HttpContext.Response.Cookies.Append("token", returnToken,
+                        new CookieOptions
+                        {
+                            Expires = DateTime.Now.AddDays(7),
+                            HttpOnly = true,
+                            Secure = true,
+                            IsEssential = true,
+                            SameSite = SameSiteMode.None
+                        });
 
+                    return RedirectToAction("Index", "Logged");
                 }
-                if (user.RoleId == 3)
+                else
                 {
-                    return RedirectToAction("AdminView", "Logged");
-
+                    ModelState.AddModelError("Email", "Email or password doesn't match.");
+                    return View("Login", dto);
                 }
-                return RedirectToAction("Index", "Logged");
 
             }
-            return View("Login");
+            else
+            {
+
+                if (ModelState.TryGetValue("Email", out var entry) && entry.Errors.Any(e => e.ErrorMessage == "Email or password doesn't match."))
+                {
+                    ModelState.AddModelError("Email", "Email or password doesn't match.");
+                }
+
+                return View("Login", dto);
+            }
 
         }
 

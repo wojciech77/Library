@@ -1,8 +1,15 @@
 ﻿@model Resource
 @{
-    ViewData["Title"] = "Resources";
-    Layout = "_Layout - loggedManager";
-
+    if (User.IsInRole("Manager"))
+    {
+        ViewData["Title"] = "Add Resource";
+        Layout = "_Layout - loggedManager";
+    }
+    else if (User.IsInRole("Admin"))
+    {
+        ViewData["Title"] = "Add Resource";
+        Layout = "_Layout - loggedAdmin";
+    }
 }
 
 <form method="post">

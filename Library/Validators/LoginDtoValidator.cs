@@ -4,9 +4,9 @@ using Library.Models;
 
 namespace Library.Validators
 {
-    public class RegisterDtoValidator : AbstractValidator<RegisterDto>
+    public class LoginDtoValidator : AbstractValidator<LoginDto>
     {
-        public RegisterDtoValidator(LibraryContext db)
+        public LoginDtoValidator(LibraryContext db)
         {
             RuleFor(x => x.Email)
                 .NotEmpty()
@@ -15,17 +15,15 @@ namespace Library.Validators
             RuleFor(x => x.Password).MinimumLength(6);
             RuleFor(x => x.Password).MaximumLength(24);
 
-            RuleFor(x => x.ConfirmPassword)
-                .Equal(e => e.Password)
-                .WithMessage("The entered passwords do not match");
+            
 
             RuleFor(x => x.Email)
                 .Custom((value, context) =>
                 {
                     var emailInUse = db.Users.Any(u => u.Email == value);
-                    if(emailInUse)
+                    if(!emailInUse)
                     {
-                        context.AddFailure("Email", "That email is taken");
+                        context.AddFailure("Email", "Email or password doesn't match.");
                     }
                 });
         }

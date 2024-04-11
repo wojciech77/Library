@@ -11,18 +11,8 @@ namespace Library.Controllers
     public class LoggedController : Controller
     {
 
-        [Authorize(Roles = "User")]
+        [Authorize(Roles = "User, Manager, Admin")]
         public IActionResult Index()
-        {
-            return View();
-        }
-        [Authorize(Roles = "Manager")]
-        public IActionResult ManagerView()
-        {
-            return View();
-        }
-        [Authorize(Roles = "Admin")]
-        public IActionResult AdminView()
         {
             return View();
         }

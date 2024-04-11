@@ -1,5 +1,6 @@
 ﻿using Library.Data;
 using Library.Models;
+using Library.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -23,9 +24,8 @@ namespace Library.Controllers
             _db = db;
             _httpContextAccessor = httpContextAccessor;
         }
-        
+
         [Authorize(Roles = "User")]
-        [Route("Borrow")]
         public IActionResult Borrow()
         {
             var borrowJson = HttpContext.Session.GetString("Borrow");
@@ -35,15 +35,26 @@ namespace Library.Controllers
             {
                 borrow = new BorrowDto
                 {
-                    Status = "Waiting for confirm by user",
+                    Status = "Waiting to collect resources for borrow",
                     ReturnDay = DateTime.Now.Date.AddDays(7),
                     Resources = new List<Resource>()
                 };
                 HttpContext.Session.SetString("Borrow", JsonConvert.SerializeObject(borrow));
             }
 
-            IEnumerable<Resource> objResourcesList = _db.Resources.ToList();
-            return View(objResourcesList);
+            List<Resource> resourcesList = _db.Resources.ToList();
+
+            var viewModel = new BorrowViewModel
+            {
+                Borrow = borrow,
+                Resources = resourcesList
+            };
+            if (TempData.ContainsKey("ResourceBorrowed"))
+            {
+                ModelState.AddModelError("ResourceBorrowed", TempData["ResourceBorrowed"].ToString());
+            }
+
+            return View(viewModel);
         }
 
         [Authorize(Roles = "User")]
@@ -51,22 +62,31 @@ namespace Library.Controllers
         public IActionResult Borrow(int id)
         {
             var resource = _db.Resources.Find(id);
+            var userId = Guid.Parse(HttpContext.User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value);
 
-            // Retrieve the serialized BorrowDto from session
             var borrowJson = HttpContext.Session.GetString("Borrow");
             var borrow = borrowJson != null ? JsonConvert.DeserializeObject<BorrowDto>(borrowJson) : null;
 
             if (resource != null && borrow != null)
             {
-                borrow.Resources.Add(resource);
-                resource.Quantity -= 1;
-                _db.Resources.Update(resource);
-                _db.SaveChanges();
+                
+                var alreadyBorrowedInOther = _db.Borrows
+                    .Any(b => b.UserId == userId &&  b.Resources.Any(r => r.Id == id));
+
+                if (!alreadyBorrowedInOther)
+                {
+                    borrow.Resources.Add(resource);
+                    resource.Quantity -= 1;
+                    _db.Resources.Update(resource);
+                    _db.SaveChanges();
+                }
+                else
+                {
+                    TempData["ResourceBorrowed"] = "You have already borrowed this resource in another borrow.";
+                }
             }
 
-            // Serialize and store the updated BorrowDto back to session
             HttpContext.Session.SetString("Borrow", JsonConvert.SerializeObject(borrow));
-
             return RedirectToAction(nameof(Borrow), new { id = string.Empty });
         }
 
@@ -82,22 +102,55 @@ namespace Library.Controllers
             }
             var borrowJson = HttpContext.Session.GetString("Borrow");
             var borrow = borrowJson != null ? JsonConvert.DeserializeObject<BorrowDto>(borrowJson) : null;
-            user.Borrows.Add(borrow);
-            _db.Users.Update(user);
-            _db.SaveChanges();
-            HttpContext.Session.Remove("Borrow");
-            return RedirectToAction("Borrowed");
+            if(borrow.Resources.Any())
+            {
+                user.Borrows.Add(borrow);
+                _db.Users.Update(user);
+                _db.SaveChanges();
+                HttpContext.Session.Remove("Borrow");
+                return RedirectToAction("Borrowed");
+            }
+            else
+            {
+                return RedirectToAction(nameof(Borrow), new { id = string.Empty });
+            }
         }
-        
+
+        public IActionResult CancelBorrow()
+        {
+            var borrowJson = HttpContext.Session.GetString("Borrow");
+            var borrow = borrowJson != null ? JsonConvert.DeserializeObject<BorrowDto>(borrowJson) : null;
+
+            if (borrow != null)
+            {
+                foreach (var resource in borrow.Resources)
+                {
+                    var dbResource = _db.Resources.Find(resource.Id);
+                    if (dbResource != null)
+                    {
+                        dbResource.Quantity += 1; 
+                        _db.Resources.Update(dbResource);
+                    }
+                }
+
+                _db.SaveChanges(); 
+
+                HttpContext.Session.Remove("Borrow"); 
+            }
+
+            return RedirectToAction(nameof(Borrow), new { id = string.Empty });
+        }
 
 
 
+
+        [Authorize(Roles = "User")]
         public IActionResult Borrowed()
         {
             var userId = Guid.Parse(HttpContext.User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value);
             var user = _db.Users
                    .Include(u => u.Borrows)
-                       .ThenInclude(b => b.Resources)  // Załaduj relację Resources dla każdego BorrowDto
+                       .ThenInclude(b => b.Resources)  
                    .FirstOrDefault(u => u.Id == userId);
 
             if (user == null)

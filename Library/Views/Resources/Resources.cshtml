@@ -1,8 +1,15 @@
 ﻿@model IEnumerable<Resource>
 @{
-    ViewData["Title"] = "Resources";
-    Layout = "_Layout - loggedManager";
-
+    if (User.IsInRole("Manager"))
+    {
+        ViewData["Title"] = "Resources";
+        Layout = "_Layout - loggedManager";
+    }
+    else if (User.IsInRole("Admin"))
+    {
+        ViewData["Title"] = "Resources";
+        Layout = "_Layout - loggedAdmin";
+    }
 }
 
 

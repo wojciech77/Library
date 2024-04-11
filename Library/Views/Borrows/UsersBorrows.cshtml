@@ -1,8 +1,16 @@
 ﻿@model IEnumerable<(Guid UserId, string UserName, IEnumerable<BorrowDto> Borrows)>
 
 @{
-    ViewData["Title"] = "Users Borrows";
-    Layout = "_Layout - logged";
+    if (User.IsInRole("Manager"))
+    {
+        ViewData["Title"] = "Users Borrows";
+        Layout = "_Layout - loggedManager";
+    }
+    else if (User.IsInRole("Admin"))
+    {
+        ViewData["Title"] = "Users Borrows";
+        Layout = "_Layout - loggedAdmin";
+    }
 }
 
 @foreach (var userBorrows in Model)

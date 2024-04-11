@@ -23,7 +23,7 @@ namespace Library.Controllers
             _db = db;
             _httpContextAccessor = httpContextAccessor;
         }
-        [Authorize]
+        [Authorize(Roles = "Admin, Manager")]
         public IActionResult Resources()
         {
             IEnumerable<Resource> objResourcesList = _db.Resources;
