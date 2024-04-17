@@ -36,9 +36,17 @@ namespace Library.Controllers
         public IActionResult DeleteUser(Guid id)
         {
             var user = _db.Users.Find(id);
-            _db.Users.Remove(user);
-            _db.SaveChanges();
-            return RedirectToAction("Users");
+            if(user.RoleId == 3)
+            {
+                return RedirectToAction("Users");
+            }
+            else
+            {
+                _db.Users.Remove(user);
+                _db.SaveChanges();
+                return RedirectToAction("Users");
+            }
+            
         }
     }
 }
