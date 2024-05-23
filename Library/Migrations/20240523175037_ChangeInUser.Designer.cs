@@ -4,6 +4,7 @@ using Library.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Library.Migrations
 {
     [DbContext(typeof(LibraryContext))]
-    partial class LibraryContextModelSnapshot : ModelSnapshot
+    [Migration("20240523175037_ChangeInUser")]
+    partial class ChangeInUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -117,10 +120,6 @@ namespace Library.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Author")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Category")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -187,11 +186,11 @@ namespace Library.Migrations
                     b.Property<int>("BorrowsCount")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("DateOfBirth")
-                        .HasColumnType("datetime2");
+                    b.Property<DateOnly?>("DateOfBirth")
+                        .HasColumnType("date");
 
-                    b.Property<DateTime>("DateOfUserCreation")
-                        .HasColumnType("datetime2");
+                    b.Property<DateOnly>("DateOfUserCreation")
+                        .HasColumnType("date");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -226,11 +225,11 @@ namespace Library.Migrations
                         {
                             Id = new Guid("b21ea37d-66d2-4c2c-d01c-08db4a9ac978"),
                             BorrowsCount = 0,
-                            DateOfUserCreation = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DateOfUserCreation = new DateOnly(1, 1, 1),
                             Email = "wojciech@gmail.com",
                             FirstName = "Admin",
                             LastName = "Nimda",
-                            PasswordHash = "AQAAAAEAACcQAAAAEBmu//PjbmgUbEw6gwYyT8oMdhfJFDQqKbq/GukFpa3OxfOKXiORgN4AkFwwRKcTRw==",
+                            PasswordHash = "AQAAAAEAACcQAAAAEArg4cG7H6NuB8cyhY4KEeCSa7dWyjdkXOz8IMCbY3b6chtVh4l5rHhwhPxfcjhkuA==",
                             RoleId = 3
                         });
                 });

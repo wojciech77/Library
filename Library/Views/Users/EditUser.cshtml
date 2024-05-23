@@ -2,55 +2,92 @@
 @{
     if (User.IsInRole("Manager"))
     {
-        ViewData["Title"] = "Edit Resource";
+        ViewData["Title"] = "Edit User";
         Layout = "_Layout - loggedManager";
     }
     else if (User.IsInRole("Admin"))
     {
-        ViewData["Title"] = "Edit Resource";
+        ViewData["Title"] = "Edit User";
         Layout = "_Layout - loggedAdmin";
     }
 }
 
 <form method="post">
-    <div class="border p-3 mt-4">
-        <div class="row pb-2">
-            <h2 class="text-primary">Create resource</h2>
-            <hr />
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <h2 class="card-title text-primary">Modify User</h2>
+                        <hr />
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label">Email</label>
+                            <input asp-for="Email" type="email" class="form-control" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="FirstName" class="form-label">First Name</label>
+                            <input asp-for="FirstName" type="text" class="form-control" />
+                            <span asp-validation-for="FirstName" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="LastName" class="form-label">Last Name</label>
+                            <input asp-for="LastName" type="text" class="form-control" />
+                            <span asp-validation-for="LastName" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="PhoneNumber" class="form-label">Phone Number</label>
+                            <input asp-for="PhoneNumber" type="tel" class="form-control" />
+                            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="DateOfBirth" class="form-label">Date of Birth</label>
+                            <input asp-for="DateOfBirth" type="date" class="form-control"/>
+                            <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="PersonalIdNumber" class="form-label">Personal ID Number</label>
+                            <input asp-for="PersonalIdNumber" type="text" class="form-control" />
+                            <span asp-validation-for="PersonalIdNumber" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Address.Street" class="form-label">Street</label>
+                            <input asp-for="Address.Street" type="text" class="form-control" />
+                            <span asp-validation-for="Address.Street" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Address.PostalCode" class="form-label">Postal Code</label>
+                            <input asp-for="Address.PostalCode" type="text" class="form-control" />
+                            <span asp-validation-for="Address.PostalCode" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Address.City" class="form-label">City</label>
+                            <input asp-for="Address.City" type="text" class="form-control" />
+                            <span asp-validation-for="Address.City" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Address.Country" class="form-label">Country</label>
+                            <input asp-for="Address.Country" type="text" class="form-control" />
+                            <span asp-validation-for="Address.Country" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="RoleId" class="form-label">Role</label>
+                            <select asp-for="RoleId" class="form-select">
+                                <option value="1">User</option>
+                                <option value="2">Manager</option>
+                                <option value="3">Admin</option>
+                            </select>
+                            <span asp-validation-for="RoleId" class="text-danger"></span>
+                        </div>
+
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary" style="width:150px">Update</button>
+                            <a asp-controller="Users" asp-action="Users" class="btn btn-secondary" style="width:150px">Back to list</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="mb-3">
-            <label asp-for="FirstName"></label>
-            <input asp-for="FirstName" class="form-control" />
-            <span asp-validation-for="FirstName" class="text-danger"></span>
-        </div>
-        <div class="mb-3">
-            <label asp-for="LastName"></label>
-            <input asp-for="LastName" class="form-control" />
-            <span asp-validation-for="LastName" class="text-danger"></span>
-        </div>
-        <div class="mb-3">
-            <label asp-for="Email"></label>
-            <input asp-for="Email" class="form-control" />
-            <span asp-validation-for="Email" class="text-danger"></span>
-        </div>
-        <div class="mb-3">
-            <label asp-for="PhoneNumber"></label>
-            <input asp-for="PhoneNumber" class="form-control" />
-            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
-        </div>
-        <div class="mb-3">
-            <label asp-for="PersonalIdNumber"></label>
-            <input asp-for="PersonalIdNumber" class="form-control" />
-            <span asp-validation-for="PersonalIdNumber" class="text-danger"></span>
-        </div>
-        <div class="mb-3">
-            <label asp-for="DateOfBirth"></label>
-            <input asp-for="DateOfBirth" class="form-control" />
-            <span asp-validation-for="DateOfBirth" class="text-danger"></span>
-        </div>
-        <button type="submit" class="btn btn-primary" style="width:150px">Create</button>
-        <a asp-controller="Users" asp-action="Users" class="btn btn-secondary" style="width:150px">
-            Back to list
-        </a>
     </div>
 </form>

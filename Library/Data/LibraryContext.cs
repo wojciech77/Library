@@ -63,7 +63,6 @@ namespace Library.Data
 
             modelBuilder.Entity<User>(eb =>
             {
-                eb.Property(u => u.FirstName).IsRequired();
 
                 eb.HasOne(u => u.Address)
                     .WithOne(a => a.User)

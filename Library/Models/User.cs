@@ -10,12 +10,12 @@ namespace Library.Models
             BorrowsCount = 0;
         }
         public Guid Id { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
         public string Email { get; set; }
         public string? PhoneNumber { get; set; }
-        public DateOnly? DateOfBirth { get; set; }
-        public DateOnly DateOfUserCreation { get; set; }
+        public DateTime? DateOfBirth { get; set; }
+        public DateTime DateOfUserCreation { get; set; }
         public string? PersonalIdNumber { get; set; }
 
         public Address? Address { get; set; }

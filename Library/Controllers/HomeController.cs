@@ -54,10 +54,10 @@ namespace Library.Controllers
                     FirstName = String.Empty,
                     LastName = String.Empty,
                     RoleId = 1,
-                    DateOfBirth = new DateOnly(1900, 01, 01),
+                    DateOfBirth = new DateTime(1900, 01, 01),
                     PersonalIdNumber = String.Empty,
                     PhoneNumber = String.Empty,
-                    DateOfUserCreation = DateOnly.FromDateTime(DateTime.Now),
+                    DateOfUserCreation = DateTime.Now,
                 };
                 var hashedPassword = _passwordHasher.HashPassword(newUser, dto.Password);
                 newUser.PasswordHash = hashedPassword;

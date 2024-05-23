@@ -4,6 +4,7 @@ using Library.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Library.Migrations
 {
     [DbContext(typeof(LibraryContext))]
-    partial class LibraryContextModelSnapshot : ModelSnapshot
+    [Migration("20240523194345_UserDateOfBirThTypeChange")]
+    partial class UserDateOfBirThTypeChange
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -116,10 +119,6 @@ namespace Library.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Author")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Category")
                         .IsRequired()
@@ -230,7 +229,7 @@ namespace Library.Migrations
                             Email = "wojciech@gmail.com",
                             FirstName = "Admin",
                             LastName = "Nimda",
-                            PasswordHash = "AQAAAAEAACcQAAAAEBmu//PjbmgUbEw6gwYyT8oMdhfJFDQqKbq/GukFpa3OxfOKXiORgN4AkFwwRKcTRw==",
+                            PasswordHash = "AQAAAAEAACcQAAAAEM5P4MKna/P4IL/5S4h6yGq0cwRgiWNztzRQoqW1rEWvnL7kT9QT3FpF9+kM3N483Q==",
                             RoleId = 3
                         });
                 });

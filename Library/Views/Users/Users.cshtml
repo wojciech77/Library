@@ -2,17 +2,15 @@
 @{
     if (User.IsInRole("Manager"))
     {
-        ViewData["Title"] = "Users";
+        ViewData["Title"] = "Edit User";
         Layout = "_Layout - loggedManager";
     }
     else if (User.IsInRole("Admin"))
     {
-        ViewData["Title"] = "Users";
+        ViewData["Title"] = "Edit User";
         Layout = "_Layout - loggedAdmin";
     }
 }
-
-
 
 <div class="text-center">
     <h1 class="display-4">Users list</h1>
@@ -20,68 +18,88 @@
 
 <div class="container p-3">
     <div class="row pt-4">
-        <div class="col-6">
-            <h2 class="text-primary">Resource list</h2>
+        <div class="col-12">
+            <h2 class="text-primary">User list</h2>
+            <table class="table table-bordered table-striped" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>First name</th>
+                        <th>Last name</th>
+                        <th>Email</th>
+                        <th>Phone Number</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model)
+                    {
+                        <tr>
+                            <td>@user.FirstName</td>
+                            <td>@user.LastName</td>
+                            <td>@user.Email</td>
+                            <td>@user.PhoneNumber</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-info" onclick="toggleDetails('@user.Id')">Details</button>
+                                    <a asp-controller="Users" asp-action="EditUser" asp-route-id="@user.Id" class="btn btn-primary">Edit</a>
+                                    @{
+                                        if (user.RoleId == 3)
+                                        {
+                                            <button type="button" class="btn btn-secondary" disabled>Delete</button> <!-- Przycisk "Delete" dla użytkowników z RoleId=3 -->
+                                        }
+                                        else
+                                        {
+                                            <a asp-controller="Users" asp-action="DeleteUser" asp-route-id="@user.Id" class="btn btn-danger">Delete</a>
+                                        }
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- Szczegóły użytkownika -->
+                        <tr id="details-@user.Id" style="display:none;">
+                            <td colspan="5">
+                                <div class="container p-3">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <strong>Street:</strong> @(user.Address != null ? user.Address.Street : "-")
+                                        </div>
+                                        <div class="col-md-4">
+                                            <strong>City:</strong> @(user.Address != null ? user.Address.City : "-")
+                                        </div>
+                                        <div class="col-md-4">
+                                            <strong>Postal Code:</strong> @(user.Address != null ? user.Address.PostalCode : "-")
+                                        </div>
+                                    </div>
+                                    <div class="row pt-2">
+                                        <div class="col-md-4">
+                                            <strong>Country:</strong> @(user.Address != null ? user.Address.Country : "-")
+                                        </div>
+                                        <div class="col-md-4">
+                                            <strong>Date of Birth:</strong> @(user.DateOfBirth.HasValue ? user.DateOfBirth.Value.ToShortDateString() : "-")
+                                        </div>
+                                        <div class="col-md-4">
+                                            <strong>Personal ID Number:</strong> @(string.IsNullOrEmpty(user.PersonalIdNumber) ? "-" : user.PersonalIdNumber)
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
 
-<table class="table table-bordered table-striped" style="width:100%">
-    <thead>
-        <tr>
-            <th>
-                First name
-            </th>
-            <th>
-                Last name
-            </th>
-            <th>
-                Email
-            </th>
-            <th>
-                Phone Number
-            </th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach(var obj in Model)
-        {
-            <tr>
-                <td width="20%">
-                    @obj.FirstName
-                </td>
-                <td width="20%">
-                    @obj.LastName
-                </td>
-                <td width="20%">
-                    @obj.Email
-                </td>
-                <td width="20%">
-                    @obj.PhoneNumber
-                </td>
-                <td>
-                    <div class="w-75 btn-group" role="group">
-                        <a asp-controller="Users" asp-action="EditUser" asp-route-id="@obj.Id"> <i class="bg-info bi-pencil-square"></i>Edit</a>
-                    </div>
-                </td>
-                <td>
-                    <div class="w-75 btn-group" role="group">
-                        @{
-                            if (obj.RoleId == 3)
-                            {
-                                <button type="button" class="btn btn-secondary" disabled>Delete</button>
-                            }
-                            else
-                            {
-                                <a asp-controller="Users" asp-action="DeleteUser" asp-route-id="@obj.Id" class="btn btn-danger">
-                                    <i class="bg-info bi-pencil-square"></i>Delete
-                                </a>
-                            }
-                        }
-                    </div>
-                </td>
-            </tr>
+@section Scripts {
+    <script>
+        function toggleDetails(userId) {
+            var detailsRow = document.getElementById("details-" + userId);
+            if (detailsRow.style.display === "none") {
+                detailsRow.style.display = "table-row";
+            } else {
+                detailsRow.style.display = "none";
+            }
         }
-    </tbody>
-
-</table>
+    </script>
+}

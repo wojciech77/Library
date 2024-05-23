@@ -94,7 +94,9 @@ namespace Library.Controllers
         public IActionResult BorrowResources()
         {
             var userId = Guid.Parse(HttpContext.User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value);
-            var user = _db.Users.Include(u => u.Borrows).FirstOrDefault(u => u.Id == userId);
+            var user = _db.Users
+                .Include(u => u.Borrows)
+                .FirstOrDefault(u => u.Id == userId);
 
             if (user == null)
             {
