@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
-
-namespace Library.Models
+﻿namespace Library.Models
 {
-    
+
     public class User
     {
         public User()
@@ -28,5 +26,5 @@ namespace Library.Models
         public int RoleId { get; set; }
 
     }
-    
+
 }

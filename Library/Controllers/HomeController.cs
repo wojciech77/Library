@@ -1,7 +1,5 @@
 ﻿using Library.Data;
 using Library.Models;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +13,7 @@ namespace Library.Controllers
 {
     public class HomeController : Controller
     {
-        
+
 
         private readonly LibraryContext _db;
         private readonly ILogger<HomeController> _logger;
@@ -29,13 +27,13 @@ namespace Library.Controllers
             _passwordHasher = passwordHasher;
             _authenticationSettings = authenticationSettings;
         }
-        
-        
+
+
         public IActionResult Index()
         {
             return View();
         }
-        
+
         public IActionResult Register()
         {
             return View();
@@ -67,7 +65,7 @@ namespace Library.Controllers
             }
             else
             {
-                
+
                 if (ModelState.TryGetValue("Email", out var entry) && entry.Errors.Any(e => e.ErrorMessage == "That email is taken"))
                 {
                     ModelState.AddModelError("Email", "That email is taken. Please choose a different email.");
@@ -87,8 +85,8 @@ namespace Library.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Login(LoginDto dto)
         {
-            
-            if(ModelState.IsValid)
+
+            if (ModelState.IsValid)
             {
                 var user = _db.Users
                 .Include(u => u.Role)

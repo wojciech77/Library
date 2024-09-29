@@ -1,13 +1,20 @@
-﻿@model Library.ViewModels.BorrowViewModel
+﻿@model BorrowDtoResources
 
 @{
-    ViewData["Title"] = "Resources";
+    ViewData["Title"] = "Borrow";
     Layout = "_Layout - logged";
 }
 
 <div class="container p-3">
     <div class="row pt-4">
         <div class="col-12">
+            @if (TempData["Limit"] != null)
+            {
+                <div class="alert alert-danger" role="alert">
+                    <strong>@TempData["Limit"]</strong>
+                </div>
+            }
+
             @if (Model.Borrow.Resources.Any())
             {
                 <h3>Resources to Borrow:</h3>
@@ -19,12 +26,8 @@
                 </ul>
 
                 <div class="col-12">
-                    <a asp-controller="Borrows" asp-action="CancelBorrow" class="btn btn-primary">
-                        Cancel
-                    </a>
-                    <a asp-controller="Borrows" asp-action="BorrowResources" class="btn btn-primary">
-                        Confirmation
-                    </a>
+                    <a asp-controller="Borrows" asp-action="CancelBorrow" class="btn btn-primary">Cancel</a>
+                    <a asp-controller="Borrows" asp-action="BorrowResources" class="btn btn-primary">Confirmation</a>
                 </div>
             }
             else
@@ -39,57 +42,122 @@
     </div>
 </div>
 
-<h3>Resources:</h3>
-<table class="table table-bordered table-striped" style="width:100%">
-    <thead>
-        <tr>
-            <th>
-                Title
-            </th>
-            <th>
-                Type
-            </th>
-            <th>
-                Category
-            </th>
-            <th>
-                Quantity
-            </th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var obj in Model.Resources)
-        {
-            var alreadyBorrowed = Model.Borrow.Resources.Any(r => r.Id == obj.Id);
-            <tr>
-                <td width="20%">
-                    @obj.Title
-                </td>
-                <td width="20%">
-                    @obj.Type
-                </td>
-                <td width="20%">
-                    @obj.Category
-                </td>
-                <td width="20%">
-                    @obj.Quantity
-                </td>
-                <td>
-                    <div class="w-75 btn-group" role="group">
-                        @{
-                            if (obj.Quantity <= 0 || alreadyBorrowed)
-                            {
-                                <button type="button" class="btn btn-secondary" disabled>Borrow</button>
-                                
-                            }
-                            else
-                            {
-                                <a asp-asp-controller="Borrows" asp-action="Borrow" asp-route-id="@obj.Id" class="btn btn-primary">Borrow</a>
-                            }
-                        }
+<div class="container p-3">
+    <div class="row pt-4">
+        <div class="col-12">
+            <form asp-controller="Borrows" asp-action="Search" method="get">
+                <div class="input-group mb-3">
+                    <input type="text" name="searchString" class="form-control" placeholder="Search for resources">
+                    <button type="submit" class="btn btn-outline-secondary">Search</button>
+                </div>
+            </form>
+            <table class="table table-bordered table-striped" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Type</th>
+                        <th>Category</th>
+                        <th>Quantity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var obj in Model.Resources)
+                    {
+                        var alreadyBorrowed = Model.Borrow.Resources.Any(r => r.Id == obj.Id);
+                            <tr>
+                                <td>@obj.Title</td>
+                                <td>@obj.Type</td>
+                                <td>@obj.Category</td>
+                                <td>@obj.Quantity</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-info" onclick="toggleDescription('@obj.Id')">Description</button>
+                                        @{
+                                        if (obj.Quantity <= 0 || alreadyBorrowed)
+                                        {
+                                            <button type="button" class="btn btn-secondary" disabled>Borrow</button>
+                                        }
+                                        else
+                                        {
+                                            <a asp-asp-controller="Borrows" asp-action="Borrow" asp-route-id="@obj.Id" class="btn btn-primary">Borrow</a>
+                                        }
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- Description zasobu -->
+                            <tr id="description-@obj.Id" style="display:none;">
+                                <td colspan="5">
+                                    <div class="container p-3">
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <strong>Description:</strong> @obj.Description
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+        <script>
+            function toggleDescription(resourceId) {
+                var descriptionRow = document.getElementById("description-" + resourceId);
+                if (descriptionRow.style.display === "none") {
+                    descriptionRow.style.display = "table-row";
+                } else {
+                    descriptionRow.style.display = "none";
+                }
+            }
+        </script>
+}
+
+@* 
+<div class="container p-3">
+    <h3>Resources:</h3>
+    <form asp-controller="Borrows" asp-action="Borrow" method="get">
+        <div class="input-group mb-3">
+            <input type="text" name="searchString" class="form-control" placeholder="Search for resources">
+            <button type="submit" class="btn btn-outline-secondary">Search</button>
+        </div>
+    </form>
+    <div class="table-responsive">
+        <div class="list-group">
+            @foreach (var obj in Model.Resources)
+            {
+                var alreadyBorrowed = Model.Borrow.Resources.Any(r => r.Id == obj.Id);
+                <div class="list-group-item">
+                    <div class="row">
+                        <div class="col-3">@obj.Title</div>
+                        <div class="col-3">@obj.Type</div>
+                        <div class="col-3">@obj.Category</div>
+                        <div class="col-3">@obj.Quantity</div>
                     </div>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="btn-group" role="group">
+                                @{
+                                    if (obj.Quantity <= 0 || alreadyBorrowed)
+                                    {
+                                        <button type="button" class="btn btn-secondary" disabled>Borrow</button>
+                                    }
+                                    else
+                                    {
+                                        <a asp-asp-controller="Borrows" asp-action="Borrow" asp-route-id="@obj.Id" class="btn btn-primary">Borrow</a>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+ *@

@@ -1,10 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Library.Models;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authentication;
-using NuGet.Common;
-using Microsoft.AspNetCore.Authorization;
-using System.Data;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Library.Controllers
 {

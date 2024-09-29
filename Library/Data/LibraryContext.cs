@@ -18,7 +18,7 @@ namespace Library.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Resource> Resources { get; set; }
         public DbSet<Role> Roles { get; set; }
-        public DbSet<BorrowDto> Borrows { get; set; } 
+        public DbSet<BorrowDto> Borrows { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -68,16 +68,16 @@ namespace Library.Data
                     .WithOne(a => a.User)
                     .HasForeignKey<Address>(a => a.UserId);
 
-                
-                eb.HasMany(u => u.Borrows)               
-                    .WithOne(b => b.User)                
-                    .HasForeignKey(b => b.UserId);       
+
+                eb.HasMany(u => u.Borrows)
+                    .WithOne(b => b.User)
+                    .HasForeignKey(b => b.UserId);
             });
 
             modelBuilder.Entity<BorrowDto>(eb =>
             {
 
-                
+
             });
 
 
@@ -88,8 +88,8 @@ namespace Library.Data
             modelBuilder.Entity<Address>()
                 .Property(a => a.Street).IsRequired();
 
-            modelBuilder.Entity<BorrowDtoResources>()
-                .HasKey(c => new { c.BorrowDtoId, c.ResourceId });
+            //modelBuilder.Entity<BorrowDtoResources>()
+            //    .HasKey(c => new { c.BorrowDtoId, c.ResourceId });
 
         }
 

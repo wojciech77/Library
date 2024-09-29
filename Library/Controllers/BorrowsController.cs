@@ -1,7 +1,7 @@
 ﻿using Library.Data;
 using Library.Models;
-using Library.ViewModels;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -42,9 +42,29 @@ namespace Library.Controllers
                 HttpContext.Session.SetString("Borrow", JsonConvert.SerializeObject(borrow));
             }
 
-            List<Resource> resourcesList = _db.Resources.ToList();
+            string? searchString = TempData["SearchString"] as string;
+            List<Resource> resourcesList;
 
-            var viewModel = new BorrowViewModel
+            if (string.IsNullOrWhiteSpace(searchString))
+            {
+                resourcesList = _db.Resources.ToList();
+            }
+            else
+            {
+                IQueryable<Resource> resourcesQuery = _db.Resources;
+
+                
+                resourcesQuery = resourcesQuery.Where(r =>
+                     r.Title.Contains(searchString) ||
+                     r.Author.Contains(searchString) ||
+                     r.Type.Contains(searchString) ||
+                     r.Category.Contains(searchString));
+
+                resourcesList = resourcesQuery.ToList();
+
+            }
+
+            var viewModel = new BorrowDtoResources
             {
                 Borrow = borrow,
                 Resources = resourcesList
@@ -89,6 +109,20 @@ namespace Library.Controllers
             HttpContext.Session.SetString("Borrow", JsonConvert.SerializeObject(borrow));
             return RedirectToAction(nameof(Borrow), new { id = string.Empty });
         }
+
+        [Authorize(Roles = "User")]
+        public IActionResult Search(string searchString)
+        {
+            if (!string.IsNullOrWhiteSpace(searchString))
+            {
+                TempData["SearchString"] = searchString;
+
+            }
+            return RedirectToAction(nameof(Borrow), new { id = string.Empty });
+
+        }
+
+
 
         [Authorize(Roles = "User")]
         public IActionResult BorrowResources()
@@ -181,6 +215,18 @@ namespace Library.Controllers
             return View(userBorrowsList);
         }
 
+        [Authorize(Roles = "Admin, Manager")]
+        [HttpGet]
+        public IActionResult ChangeStatus(int borrowId, string status)
+        {
+            var borrow = _db.Borrows.Find(borrowId);
+            if (borrow != null)
+            {
+                borrow.Status = status; // Zaktualizuj status
+                _db.SaveChanges(); // Zapisz zmiany w bazie danych
+            }
+            return RedirectToAction("UsersBorrows"); // Przekieruj do odpowiedniego widoku
+        }
 
         [Authorize(Roles = "Admin, Manager")]
         public IActionResult DeleteBorrow(Guid userId, int borrowId)

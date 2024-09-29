@@ -6,8 +6,8 @@ namespace Library.Models
     {
         public int Id { get; set; }
         public string Status { get; set; }
-        
-        public DateTime ReturnDay { get; set; }
+
+        public DateTime? ReturnDay { get; set; }
 
         // Foreign key property
         public Guid UserId { get; set; }

@@ -1,10 +1,8 @@
 ﻿using Library.Data;
 using Library.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Data;
 
 namespace Library.Controllers
 {
@@ -27,7 +25,7 @@ namespace Library.Controllers
         public IActionResult EditUser(Guid id)
         {
             var user = _db.Users
-                           .Include(u => u.Address) 
+                           .Include(u => u.Address)
                            .FirstOrDefault(u => u.Id == id);
             return View(user);
         }
@@ -55,7 +53,8 @@ namespace Library.Controllers
             existingUser.DateOfBirth = user.DateOfBirth;
             existingUser.PersonalIdNumber = user.PersonalIdNumber;
 
-
+            // Aktualizacja roli użytkownika
+            existingUser.RoleId = user.RoleId; // Aktualizacja RoleId
 
             // Sprawdzenie, czy użytkownik ma już wpis w tabeli Addresses
             var existingAddress = _db.Addresses.FirstOrDefault(a => a.UserId == user.Id);
@@ -98,7 +97,7 @@ namespace Library.Controllers
         public IActionResult DeleteUser(Guid id)
         {
             var user = _db.Users.Find(id);
-            if(user.RoleId == 3)
+            if (user.RoleId == 3)
             {
                 return RedirectToAction("Users");
             }
@@ -108,7 +107,7 @@ namespace Library.Controllers
                 _db.SaveChanges();
                 return RedirectToAction("Users");
             }
-            
+
         }
     }
 }

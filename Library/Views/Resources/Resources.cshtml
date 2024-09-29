@@ -1,18 +1,17 @@
 ﻿@model IEnumerable<Resource>
+
 @{
     if (User.IsInRole("Manager"))
     {
-        ViewData["Title"] = "Edit User";
+        ViewData["Title"] = "Resources";
         Layout = "_Layout - loggedManager";
     }
     else if (User.IsInRole("Admin"))
     {
-        ViewData["Title"] = "Edit User";
+        ViewData["Title"] = "Resources";
         Layout = "_Layout - loggedAdmin";
     }
 }
-
-
 
 <div class="container p-3">
     <div class="row pt-4">
@@ -24,11 +23,18 @@
                 Create new resource
             </a>
         </div>
-    </div>  
+    </div>
 </div>
+
 <div class="container p-3">
     <div class="row pt-4">
         <div class="col-12">
+            <form asp-controller="Resources" asp-action="SearchResources" method="get">
+                <div class="input-group mb-3">
+                    <input type="text" name="searchString" class="form-control" placeholder="Search for resources">
+                    <button type="submit" class="btn btn-outline-secondary">Search</button>
+                </div>
+            </form>
             <table class="table table-bordered table-striped" style="width:100%">
                 <thead>
                     <tr>
@@ -50,13 +56,12 @@
                             <td>@resource.Quantity</td>
                             <td>
                                 <div class="btn-group" role="group">
-                                    <button type="button" class="btn btn-info" onclick="toggleDetails('@resource.Id')">Description</button>
+                                    <button type="button" class="btn btn-info" onclick="toggleDescription('@resource.Id')">Description</button>
                                     <a asp-controller="Resources" asp-action="EditResource" asp-route-id="@resource.Id" class="btn btn-primary">Edit</a>
                                     <a asp-controller="Resources" asp-action="DeleteResource" asp-route-id="@resource.Id" class="btn btn-danger">Delete</a>
                                 </div>
                             </td>
                         </tr>
-                        <!-- Szczegóły użytkownika -->
                         <!-- Description zasobu -->
                         <tr id="description-@resource.Id" style="display:none;">
                             <td colspan="5">
@@ -88,53 +93,3 @@
         }
     </script>
 }
-@*
-<table class="table table-bordered table-striped" style="width:100%">
-    <thead>
-        <tr>
-            <th>
-                Title
-            </th>
-            <th>
-                Type
-            </th>
-            <th>
-                Category
-            </th>
-            <th>
-                Quantity
-            </th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var obj in Model)
-        {
-            <tr>
-                <td width="20%">
-                    @obj.Title
-                </td>
-                <td width="20%">
-                    @obj.Type
-                </td>
-                <td width="20%">
-                    @obj.Category
-                </td>
-                <td width="20%">
-                    @obj.Quantity
-                </td>
-                <td>
-                    <div class="w-75 btn-group" role="group">
-                        <a asp-asp-controller="Resource" asp-action="EditResource" asp-route-id="@obj.Id"> <i class="bg-info bi-pencil-square"></i>Edit</a>
-                    </div>
-                </td>
-                <td>
-                    <div class="w-75 btn-group" role="group">
-                        <a asp-asp-controller="Resource" asp-action="DeleteResource" asp-route-id="@obj.Id"> <i class="bg-info bi-pencil-square"></i>Delete</a>
-                    </div>
-                </td>
-            </tr>
-        }
-    </tbody>
-
-</table>
-*@

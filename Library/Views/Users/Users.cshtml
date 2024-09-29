@@ -72,8 +72,9 @@
                                     </div>
                                     <div class="row pt-2">
                                         <div class="col-md-4">
-                                            <strong>Country:</strong> @(user.Address != null ? user.Address.Country : "-")
+                                            <strong>Role:</strong> @(user.RoleId == 1 ? "User" : user.RoleId == 2 ? "Manager" : user.RoleId == 3 ? "Admin" : "-")
                                         </div>
+
                                         <div class="col-md-4">
                                             <strong>Date of Birth:</strong> @(user.DateOfBirth.HasValue ? user.DateOfBirth.Value.ToShortDateString() : "-")
                                         </div>

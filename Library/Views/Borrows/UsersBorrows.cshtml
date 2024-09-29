@@ -15,42 +15,73 @@
 
 @foreach (var userBorrows in Model)
 {
-    <h2>@userBorrows.UserName</h2>
-
-    @foreach (var borrow in userBorrows.Borrows)
-    {
-        <h4>Borrow Information:</h4>
-        <p>Status: @borrow.Status</p>
-        <p>Return Day: @borrow.ReturnDay</p>
-
-        <td>
-            <div class="w-75 btn-group" role="group">
-                <a asp-controller="Borrows" asp-action="DeleteBorrow" asp-route-userId="@userBorrows.UserId" asp-route-borrowId="@borrow.Id"> <i class="bg-info bi-pencil-square"></i>Delete</a>
-            </div>
-        </td>
-
-        <h4>Resources:</h4>
-        <table class="table table-bordered table-striped">
-            <thead>
-                <tr>
-                    <th>Title</th>
-                    <th>Type</th>
-                    <th>Category</th>
-                    <th>Quantity</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var resource in borrow.Resources)
+    <div class="card mb-3">
+        <div class="card-header">
+            <h5>@userBorrows.UserName</h5>
+            <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#userBorrows_@userBorrows.UserId" aria-expanded="false" aria-controls="userBorrows_@userBorrows.UserId">
+                Show Borrows
+            </button>
+        </div>
+        <div class="collapse" id="userBorrows_@userBorrows.UserId">
+            <div class="card-body">
+                @if (userBorrows.Borrows.Any())
                 {
-                    <tr>
-                        <td>@resource.Title</td>
-                        <td>@resource.Type</td>
-                        <td>@resource.Category</td>
-                        <td>@resource.Quantity</td>
-                    </tr>
+                    foreach (var borrow in userBorrows.Borrows)
+                    {
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h6>Borrow Information:</h6>
+                                <p>
+                                    Status:
+                                    <span>@borrow.Status</span>
+                                    <div class="btn-group">
+                                        @foreach (var statusOption in new[] { "Waiting for prepare order", "Ready to pickup", "Borrowed", "Returned" })
+                                        {
+                                            <a asp-controller="Borrows" asp-action="ChangeStatus" asp-route-id="@borrow.Id" asp-route-status="@statusOption" class="btn btn-outline-primary" title="Change status to @statusOption">
+                                                @statusOption
+                                            </a>
+                                        }
+                                    </div>
+                                </p>
+                                <p>
+                                    @{
+                                        var returnDate = borrow.ReturnDay?.ToString("yyyy-MM-dd") ?? "-";
+                                        var color = borrow.ReturnDay != null && borrow.ReturnDay < DateTime.Now ? "red" : "inherit";
+                                    }
+                                    <span style="color: @color;">Return Day: @returnDate</span>
+                                </p>
+                                <a asp-controller="Borrows" asp-action="DeleteBorrow" asp-route-userId="@userBorrows.UserId" asp-route-borrowId="@borrow.Id" class="btn btn-danger">Delete</a>
+                            </div>
+                            <div class="card-body">
+                                <h6>Resources:</h6>
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Title</th>
+                                            <th>Type</th>
+                                            <th>Category</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var resource in borrow.Resources)
+                                        {
+                                            <tr>
+                                                <td>@resource.Title</td>
+                                                <td>@resource.Type</td>
+                                                <td>@resource.Category</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    }
                 }
-            </tbody>
-        </table>
-    }
+                else
+                {
+                    <p>No borrows found for this user.</p>
+                }
+            </div>
+        </div>
+    </div>
 }
-

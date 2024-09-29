@@ -1,13 +1,7 @@
 ﻿using Library.Data;
 using Library.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
-using NuGet.Protocol;
-using System.Reflection.Metadata;
-using System.Security.Claims;
 
 namespace Library.Controllers
 {
@@ -23,11 +17,31 @@ namespace Library.Controllers
             _db = db;
             _httpContextAccessor = httpContextAccessor;
         }
+
+
         [Authorize(Roles = "Admin, Manager")]
         public IActionResult Resources()
         {
             IEnumerable<Resource> objResourcesList = _db.Resources;
             return View(objResourcesList);
+        }
+
+        [Authorize(Roles = "Admin, Manager")]
+        public IActionResult SearchResources(string searchString)
+        {
+            IQueryable<Resource> resourcesQuery = _db.Resources;
+
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                resourcesQuery = resourcesQuery.Where(r =>
+                    r.Title.Contains(searchString) ||
+                    r.Author.Contains(searchString) ||
+                    r.Type.Contains(searchString) ||
+                    r.Category.Contains(searchString));
+            }
+
+            IEnumerable<Resource> objResourcesList = resourcesQuery.ToList();
+            return View("Resources", objResourcesList);
         }
 
         [Authorize(Roles = "Admin, Manager")]
@@ -43,13 +57,48 @@ namespace Library.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult AddResource(Resource obj)
         {
-            if(ModelState.IsValid)
+            if (ModelState.IsValid)
             {
                 _db.Resources.Add(obj);
                 _db.SaveChanges();
                 return RedirectToAction("Resources");
             }
-            return RedirectToAction("AddResource");
+            else
+            {
+                // Sprawdź, czy wystąpiły błędy związane z polami Title, Author, Type, Category i Quantity
+                if (ModelState.TryGetValue("Title", out var titleEntry) && titleEntry.Errors.Any())
+                {
+                    // Dodaj odpowiedni komunikat o błędzie dla pola Title
+                    ModelState.AddModelError("Title", "Invalid title.");
+                }
+
+                if (ModelState.TryGetValue("Author", out var authorEntry) && authorEntry.Errors.Any())
+                {
+                    // Dodaj odpowiedni komunikat o błędzie dla pola Author
+                    ModelState.AddModelError("Author", "Invalid author.");
+                }
+
+                if (ModelState.TryGetValue("Type", out var typeEntry) && typeEntry.Errors.Any())
+                {
+                    // Dodaj odpowiedni komunikat o błędzie dla pola Type
+                    ModelState.AddModelError("Type", "Invalid type.");
+                }
+
+                if (ModelState.TryGetValue("Category", out var categoryEntry) && categoryEntry.Errors.Any())
+                {
+                    // Dodaj odpowiedni komunikat o błędzie dla pola Category
+                    ModelState.AddModelError("Category", "Invalid category.");
+                }
+
+                if (ModelState.TryGetValue("Quantity", out var quantityEntry) && quantityEntry.Errors.Any())
+                {
+                    // Dodaj odpowiedni komunikat o błędzie dla pola Quantity
+                    ModelState.AddModelError("Quantity", "Invalid quantity.");
+                }
+
+                // Zwróć widok logowania z modelem zawierającym błędy walidacji
+                return View("AddResource", obj);
+            }
 
         }
         [Authorize(Roles = "Admin, Manager")]
@@ -62,10 +111,55 @@ namespace Library.Controllers
         [Authorize(Roles = "Admin, Manager")]
         public IActionResult EditResource(Resource obj)
         {
-            _db.Resources.Update(obj);
-            _db.SaveChanges();
-            return RedirectToAction("Resources");
+            if (ModelState.IsValid)
+            {
+                _db.Resources.Update(obj);
+                _db.SaveChanges();
+                return RedirectToAction("Resources");
+            }
+            else
+            {
+                // Sprawdź, czy wystąpiły błędy związane z polami Title, Author, Type, Category i Quantity
+                if (ModelState.TryGetValue("Title", out var titleEntry) && titleEntry.Errors.Any())
+                {
+                    // Dodaj odpowiedni komunikat o błędzie dla pola Title
+                    ModelState.AddModelError("Title", "Invalid title.");
+                }
+
+                if (ModelState.TryGetValue("Author", out var authorEntry) && authorEntry.Errors.Any())
+                {
+                    // Dodaj odpowiedni komunikat o błędzie dla pola Author
+                    ModelState.AddModelError("Author", "Invalid author.");
+                }
+
+                if (ModelState.TryGetValue("Type", out var typeEntry) && typeEntry.Errors.Any())
+                {
+                    // Dodaj odpowiedni komunikat o błędzie dla pola Type
+                    ModelState.AddModelError("Type", "Invalid type.");
+                }
+
+                if (ModelState.TryGetValue("Category", out var categoryEntry) && categoryEntry.Errors.Any())
+                {
+                    // Dodaj odpowiedni komunikat o błędzie dla pola Category
+                    ModelState.AddModelError("Category", "Invalid category.");
+                }
+
+                if (ModelState.TryGetValue("Quantity", out var quantityEntry) && quantityEntry.Errors.Any())
+                {
+                    // Dodaj odpowiedni komunikat o błędzie dla pola Quantity
+                    ModelState.AddModelError("Quantity", "Invalid quantity.");
+                }
+
+                // Zwróć widok logowania z modelem zawierającym błędy walidacji
+                return View("EditResource", obj);
+            }
+
+
         }
+
+
+
+
         [Authorize(Roles = "Admin, Manager")]
         public IActionResult DeleteResource(int id)
         {
@@ -74,7 +168,7 @@ namespace Library.Controllers
             _db.SaveChanges();
             return RedirectToAction("Resources");
         }
-        
+
 
 
 

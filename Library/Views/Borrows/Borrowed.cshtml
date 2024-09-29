@@ -15,7 +15,7 @@
 {
     <h4>Information:</h4>
     <p>Status: @borrow.Status</p>
-    <p>Return Day: @borrow.ReturnDay</p>
+    <p>Return Day: @(borrow.ReturnDay.HasValue ? borrow.ReturnDay.Value.ToString("yyyy-MM-dd") : "-")</p>
 
     <h4>Resources:</h4>
     <table class="table table-bordered table-striped" style="width:100%">
