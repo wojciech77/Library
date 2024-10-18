@@ -200,23 +200,14 @@ namespace Library.Controllers
         [Authorize(Roles = "Admin, Manager")]
         public IActionResult UsersBorrows()
         {
-            var usersWithBorrows = _db.Users
-                .Include(u => u.Borrows)
-                    .ThenInclude(b => b.Resources);
-
-            var userBorrowsList = new List<(Guid Id, string UserName, IEnumerable<BorrowDto> Borrows)>();
-
-            foreach (var user in usersWithBorrows)
-            {
-                var userBorrows = (Id: user.Id, UserName: $"{user.FirstName} {user.LastName}", Borrows: user.Borrows);
-                userBorrowsList.Add(userBorrows);
-            }
-
-            return View(userBorrowsList);
+            IEnumerable<BorrowDto> borrows = _db.Borrows
+                .Include(b => b.Resources)
+                .Include(b => b.User);
+            return View(borrows);
         }
 
         [Authorize(Roles = "Admin, Manager")]
-        [HttpGet]
+        [HttpPost]
         public IActionResult ChangeStatus(int borrowId, string status)
         {
             var borrow = _db.Borrows.Find(borrowId);
@@ -247,6 +238,26 @@ namespace Library.Controllers
 
             _db.SaveChanges(); // Zapisujemy zmiany
             return RedirectToAction("UsersBorrows");
+        }
+
+        [Authorize(Roles = "Admin, Manager")]
+        public IActionResult SearchBorrows(string searchString)
+        {
+            IQueryable<BorrowDto> borrowsQuery = _db.Borrows
+                .Include(b => b.User); // Upewnij się, że pobierasz użytkownika dla każdego borrow
+
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                borrowsQuery = borrowsQuery.Where(b =>
+                    b.Status.Contains(searchString) || // Przeszukiwanie po statusie wypożyczenia
+                    b.User.FirstName.Contains(searchString) || // Przeszukiwanie po imieniu użytkownika
+                    b.User.LastName.Contains(searchString) || // Przeszukiwanie po nazwisku użytkownika
+                    b.User.PersonalIdNumber.Contains(searchString) || // Przeszukiwanie po numerze identyfikacyjnym
+                    b.ReturnDay.ToString().Contains(searchString)); // Przeszukiwanie po dniu zwrotu
+            }
+
+            IEnumerable<BorrowDto> objBorrowsList = borrowsQuery.ToList();
+            return View("UsersBorrows", objBorrowsList); // Zakładam, że chcesz wrócić do widoku z borrow
         }
     }
 

@@ -1,4 +1,115 @@
-﻿@model IEnumerable<(Guid UserId, string UserName, IEnumerable<BorrowDto> Borrows)>
+﻿@model IEnumerable<BorrowDto>
+
+@{
+    if (User.IsInRole("Manager"))
+    {
+        ViewData["Title"] = "Users borrows";
+        Layout = "_Layout - loggedManager";
+    }
+    else if (User.IsInRole("Admin"))
+    {
+        ViewData["Title"] = "User borrows";
+        Layout = "_Layout - loggedAdmin";
+    }
+}
+
+<h2>Users Borrows</h2>
+
+<!-- Dodanie pola wyszukiwania -->
+<form asp-controller="Borrows" asp-action="SearchBorrows" method="get" class="mb-3">
+    <div class="input-group">
+        <input type="text" name="searchString" class="form-control" placeholder="Search for borrows" />
+        <button type="submit" class="btn btn-outline-secondary">Search</button>
+    </div>
+</form>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Borrow ID</th>
+            <th>User</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var borrow in Model)
+        {
+            <tr>
+                <td>@borrow.Id</td>
+                <td>@borrow.User.FirstName @borrow.User.LastName</td>
+                <td>
+                    <form asp-action="ChangeStatus" asp-controller="Borrows" method="post">
+                        <input type="hidden" name="borrowId" value="@borrow.Id" />
+                        <select name="status" class="form-select" onchange="this.form.submit()">
+                            <option value="Waiting for prepare order" selected="@(borrow.Status == "Waiting for prepare order")">Waiting for prepare order</option>
+                            <option value="Ready to pickup" selected="@(borrow.Status == "Ready to pickup")">Ready to pickup</option>
+                            <option value="Borrowed" selected="@(borrow.Status == "Borrowed")">Borrowed</option>
+                            <option value="Returned" selected="@(borrow.Status == "Returned")">Returned</option>
+                        </select>
+                    </form>
+                </td>
+                <td>
+                    <button class="btn btn-primary" type="button" onclick="toggleDescription(@borrow.Id)">Toggle Resources</button>
+                    <form asp-action="DeleteBorrow" asp-controller="Borrows" method="post" style="display:inline;">
+                        <input type="hidden" name="borrowId" value="@borrow.Id" />
+                        <input type="hidden" name="userId" value="@borrow.User.Id" />
+                        <button type="submit" class="btn btn-danger">Delete Borrow</button>
+                    </form>
+                </td>
+            </tr>
+            <tr id="description-@borrow.Id" style="display:none;">
+                <td colspan="4">
+                    <h6>Resources in this borrow:</h6>
+                    @if (borrow.Resources.Any())
+                    {
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Type</th>
+                                    <th>Category</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var resource in borrow.Resources)
+                                {
+                                    <tr>
+                                        <td>@resource.Title</td>
+                                        <td>@resource.Type</td>
+                                        <td>@resource.Category</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <p>No resources in this borrow.</p>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script>
+        function toggleDescription(resourceId) {
+            var descriptionRow = document.getElementById("description-" + resourceId);
+            if (descriptionRow.style.display === "none") {
+                descriptionRow.style.display = "table-row";
+            } else {
+                descriptionRow.style.display = "none";
+            }
+        }
+    </script>
+}
+
+
+
+@*
+@model IEnumerable<(Guid UserId, string UserName, IEnumerable<BorrowDto> Borrows)>
 
 @{
     if (User.IsInRole("Manager"))
@@ -85,3 +196,4 @@
         </div>
     </div>
 }
+*@
