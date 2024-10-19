@@ -86,24 +86,34 @@ namespace Library.Controllers
 
             var borrowJson = HttpContext.Session.GetString("Borrow");
             var borrow = borrowJson != null ? JsonConvert.DeserializeObject<BorrowDto>(borrowJson) : null;
-
-            if (resource != null && borrow != null)
+            
             {
-                
-                var alreadyBorrowedInOther = _db.Borrows
-                    .Any(b => b.UserId == userId &&  b.Resources.Any(r => r.Id == id));
+                if (resource != null && borrow != null)
+                {
+                    if (borrow.Resources.Count <= 2)
+                    {
+                        var alreadyBorrowedInOther = _db.Borrows
+                        .Any(b => b.UserId == userId && b.Resources.Any(r => r.Id == id));
 
-                if (!alreadyBorrowedInOther)
-                {
-                    borrow.Resources.Add(resource);
-                    resource.Quantity -= 1;
-                    _db.Resources.Update(resource);
-                    _db.SaveChanges();
+                        if (!alreadyBorrowedInOther)
+                        {
+                            borrow.Resources.Add(resource);
+                            resource.Quantity -= 1;
+                            _db.Resources.Update(resource);
+                            _db.SaveChanges();
+                        }
+                        else
+                        {
+                            TempData["ResourceBorrowed"] = "You have already borrowed this resource in another borrow.";
+                        }
+                    }
+                    else
+                    {
+                        TempData["ResourceMax"] = "Three position is maxium in one borrow.";
+                    }
                 }
-                else
-                {
-                    TempData["ResourceBorrowed"] = "You have already borrowed this resource in another borrow.";
-                }
+            
+            
             }
 
             HttpContext.Session.SetString("Borrow", JsonConvert.SerializeObject(borrow));

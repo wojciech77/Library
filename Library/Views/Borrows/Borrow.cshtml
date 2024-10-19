@@ -38,6 +38,10 @@
             {
                 <div class="text-danger">@Html.ValidationMessage("ResourceBorrowed")</div>
             }
+            @if (ViewData.ModelState.ContainsKey("ResoxurceMax"))
+            {
+                <div class="text-danger">@Html.ValidationMessage("ResourceMax")</div>
+            }
         </div>
     </div>
 </div>

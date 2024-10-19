@@ -5,40 +5,66 @@
     Layout = "_Layout - logged";
 }
 
-
-
 <h2>Borrowed and waiting for collect</h2>
-
-
 
 @foreach (var borrow in Model)
 {
-    <h4>Information:</h4>
-    <p>Status: @borrow.Status</p>
-    <p>Return Day: @(borrow.ReturnDay.HasValue ? borrow.ReturnDay.Value.ToString("yyyy-MM-dd") : "-")</p>
+    <div class="card mb-3">
+        <div class="card-header">
+            <h4>Borrow Information</h4>
+        </div>
+        <div class="card-body">
+            <p><strong>Status:</strong> @borrow.Status</p>
+            <p><strong>Return Day:</strong> @(borrow.ReturnDay.HasValue ? borrow.ReturnDay.Value.ToString("yyyy-MM-dd") : "-")</p>
 
-    <h4>Resources:</h4>
-    <table class="table table-bordered table-striped" style="width:100%">
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Type</th>
-                <th>Category</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var resource in borrow.Resources)
-            {
-                <tr>
-                    <td>@resource.Title</td>
-                    <td>@resource.Type</td>
-                    <td>@resource.Category</td>
-                </tr>
+            <!-- Przycisk rozwijania -->
+            <button class="btn btn-primary" type="button" onclick="toggleResources(@borrow.Id)">
+                Show Resources
+            </button>
+
+            <!-- Tabela z zasobami (ukryta na starcie) -->
+            <div id="resources-@borrow.Id" style="display:none; margin-top:20px;">
+                <h4>Resources:</h4>
+                @if (borrow.Resources.Any())
+                {
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Type</th>
+                                <th>Category</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var resource in borrow.Resources)
+                            {
+                                <tr>
+                                    <td>@resource.Title</td>
+                                    <td>@resource.Type</td>
+                                    <td>@resource.Category</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p>No resources in this borrow.</p>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        function toggleResources(borrowId) {
+            var resourceDiv = document.getElementById("resources-" + borrowId);
+            if (resourceDiv.style.display === "none") {
+                resourceDiv.style.display = "block";
+            } else {
+                resourceDiv.style.display = "none";
             }
-        </tbody>
-    </table>
-
-    
-
-    <hr />
+        }
+    </script>
 }
