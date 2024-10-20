@@ -30,18 +30,16 @@
                     <a asp-controller="Borrows" asp-action="BorrowResources" class="btn btn-primary">Confirmation</a>
                 </div>
             }
-            else
+            @if (TempData["ResourceBorrowed"] != null)
             {
-                <p>No Borrow details available.</p>
+                <div class="text-danger">@TempData["ResourceBorrowed"]</div>
             }
-            @if (ViewData.ModelState.ContainsKey("ResourceBorrowed"))
+
+            @if (TempData["ResourcesMaximum"] != null)
             {
-                <div class="text-danger">@Html.ValidationMessage("ResourceBorrowed")</div>
+                <div class="text-danger">@TempData["ResourcesMaximum"]</div>
             }
-            @if (ViewData.ModelState.ContainsKey("ResoxurceMax"))
-            {
-                <div class="text-danger">@Html.ValidationMessage("ResourceMax")</div>
-            }
+            
         </div>
     </div>
 </div>
@@ -71,6 +69,7 @@
                         var alreadyBorrowed = Model.Borrow.Resources.Any(r => r.Id == obj.Id);
                             <tr>
                                 <td>@obj.Title</td>
+                                <td>@obj.Author</td>
                                 <td>@obj.Type</td>
                                 <td>@obj.Category</td>
                                 <td>@obj.Quantity</td>

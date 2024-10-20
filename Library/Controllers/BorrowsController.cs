@@ -1,13 +1,9 @@
 ﻿using Library.Data;
 using Library.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authorization.Infrastructure;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using NuGet.Protocol;
-using System.Reflection.Metadata;
 using System.Security.Claims;
 
 
@@ -36,7 +32,6 @@ namespace Library.Controllers
                 borrow = new BorrowDto
                 {
                     Status = "Waiting to collect resources for borrow",
-                    ReturnDay = DateTime.Now.Date.AddDays(7),
                     Resources = new List<Resource>()
                 };
                 HttpContext.Session.SetString("Borrow", JsonConvert.SerializeObject(borrow));
@@ -53,7 +48,7 @@ namespace Library.Controllers
             {
                 IQueryable<Resource> resourcesQuery = _db.Resources;
 
-                
+
                 resourcesQuery = resourcesQuery.Where(r =>
                      r.Title.Contains(searchString) ||
                      r.Author.Contains(searchString) ||
@@ -86,7 +81,7 @@ namespace Library.Controllers
 
             var borrowJson = HttpContext.Session.GetString("Borrow");
             var borrow = borrowJson != null ? JsonConvert.DeserializeObject<BorrowDto>(borrowJson) : null;
-            
+
             {
                 if (resource != null && borrow != null)
                 {
@@ -104,16 +99,16 @@ namespace Library.Controllers
                         }
                         else
                         {
-                            TempData["ResourceBorrowed"] = "You have already borrowed this resource in another borrow.";
+                            TempData["ResourceBorrowed"] = "This resource has already been borrowed.";
                         }
                     }
                     else
                     {
-                        TempData["ResourceMax"] = "Three position is maxium in one borrow.";
+                        TempData["ResourcesMaximum"] = "You have reached the maximum number of resources in one borrow.";
                     }
                 }
-            
-            
+
+
             }
 
             HttpContext.Session.SetString("Borrow", JsonConvert.SerializeObject(borrow));
@@ -148,7 +143,7 @@ namespace Library.Controllers
             }
             var borrowJson = HttpContext.Session.GetString("Borrow");
             var borrow = borrowJson != null ? JsonConvert.DeserializeObject<BorrowDto>(borrowJson) : null;
-            if(borrow.Resources.Any())
+            if (borrow.Resources.Any())
             {
                 user.Borrows.Add(borrow);
                 _db.Users.Update(user);
@@ -174,14 +169,14 @@ namespace Library.Controllers
                     var dbResource = _db.Resources.Find(resource.Id);
                     if (dbResource != null)
                     {
-                        dbResource.Quantity += 1; 
+                        dbResource.Quantity += 1;
                         _db.Resources.Update(dbResource);
                     }
                 }
 
-                _db.SaveChanges(); 
+                _db.SaveChanges();
 
-                HttpContext.Session.Remove("Borrow"); 
+                HttpContext.Session.Remove("Borrow");
             }
 
             return RedirectToAction(nameof(Borrow), new { id = string.Empty });
@@ -196,7 +191,7 @@ namespace Library.Controllers
             var userId = Guid.Parse(HttpContext.User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value);
             var user = _db.Users
                    .Include(u => u.Borrows)
-                       .ThenInclude(b => b.Resources)  
+                       .ThenInclude(b => b.Resources)
                    .FirstOrDefault(u => u.Id == userId);
 
             if (user == null)
@@ -224,6 +219,15 @@ namespace Library.Controllers
             if (borrow != null)
             {
                 borrow.Status = status; // Zaktualizuj status
+                if(status == "Borrowed")
+                {
+                    borrow.BorrowDay = DateTime.Now;
+                    borrow.ReturnDay = DateTime.Now.AddDays(14);
+                }
+                if(status == "Returned")
+                {
+                    borrow.ReturnDay = DateTime.Now;
+                }
                 _db.SaveChanges(); // Zapisz zmiany w bazie danych
             }
             return RedirectToAction("UsersBorrows"); // Przekieruj do odpowiedniego widoku
@@ -243,7 +247,7 @@ namespace Library.Controllers
             {
                 return NotFound(); // Jeśli nie znaleziono BorrowDto o podanym ID w liście Borrows użytkownika, zwracamy NotFound
             }
-            
+
             user.Borrows.Remove(borrowToRemove); // Usuwamy BorrowDto z listy Borrows
 
             _db.SaveChanges(); // Zapisujemy zmiany

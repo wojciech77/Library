@@ -11,11 +11,16 @@
 {
     <div class="card mb-3">
         <div class="card-header">
-            <h4>Borrow Information</h4>
+            <div class="d-flex justify-content-between">
+                <h4>Borrow ID: @borrow.Id</h4>
+                <p><strong>Status:</strong> @borrow.Status</p>
+            </div>
         </div>
         <div class="card-body">
-            <p><strong>Status:</strong> @borrow.Status</p>
-            <p><strong>Return Day:</strong> @(borrow.ReturnDay.HasValue ? borrow.ReturnDay.Value.ToString("yyyy-MM-dd") : "-")</p>
+            <div class="d-flex justify-content-between">
+                <p><strong>Borrow Day:</strong> @(borrow.BorrowDay.HasValue ? borrow.BorrowDay.Value.ToString("yyyy-MM-dd") : "-")</p>
+                <p><strong>Return Day:</strong> @(borrow.ReturnDay.HasValue ? borrow.ReturnDay.Value.ToString("yyyy-MM-dd") : "-")</p>
+            </div>
 
             <!-- Przycisk rozwijania -->
             <button class="btn btn-primary" type="button" onclick="toggleResources(@borrow.Id)">
