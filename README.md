@@ -16,6 +16,8 @@ The Library Management System is designed to digitalize library records and simp
 
 ## Technologies and Libraries
 
+## Technologies and Libraries
+
 - **C#** and **ASP.NET Core** for the backend.
 - **Entity Framework** for database access and management.
 - **LINQ** for querying data.
@@ -24,6 +26,13 @@ The Library Management System is designed to digitalize library records and simp
 - **Password Hashing** to securely store user credentials.
 - **Session and Cookie Management** to handle authentication and user data.
 - **Singleton Pattern** for sharing JWT across the application.
+- **ASP.NET Identity** for user management.
+- **Razor Pages** for front-end rendering.
+- **Bootstrap** (CSS framework) for styling and layout.
+- **Dependency Injection (DI)** for injecting services.
+- **REST APIs** for handling client-server communication.
+- **EF Migrations** for managing database changes.
+
 
 ## How to Run the Project
 

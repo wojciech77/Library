@@ -1,4 +1,5 @@
-﻿using Library.Models;
+﻿using System;
+using Library.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,8 +25,6 @@ namespace Library.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 
-            string ADMIN_ID = "B21EA37D-66D2-4C2C-D01C-08DB4A9AC978";
-
             modelBuilder.Entity<Role>()
                 .HasData(
                     new Role
@@ -46,20 +45,6 @@ namespace Library.Data
                     }
                 );
 
-            var appUser = new User
-            {
-                Id = Guid.Parse(ADMIN_ID),
-                Email = "wojciech@gmail.com",
-                FirstName = "Admin",
-                LastName = "Nimda",
-                RoleId = 3
-            };
-            var hashedPassword = _passwordHasher.HashPassword(appUser, "Password");
-            appUser.PasswordHash = hashedPassword;
-
-
-            modelBuilder.Entity<User>()
-                .HasData(appUser);
 
             modelBuilder.Entity<User>(eb =>
             {
@@ -88,8 +73,7 @@ namespace Library.Data
             modelBuilder.Entity<Address>()
                 .Property(a => a.Street).IsRequired();
 
-            //modelBuilder.Entity<BorrowDtoResources>()
-            //    .HasKey(c => new { c.BorrowDtoId, c.ResourceId });
+              
 
         }
 
