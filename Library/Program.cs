@@ -1,4 +1,3 @@
-using System;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Library.Data;
@@ -12,32 +11,29 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var authenticationSettings = new AuthenticationSettings();
+// Load authentication settings from environment variables or appsettings
+var authenticationSettings = new AuthenticationSettings
+{
+    JwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? builder.Configuration["Authentication:JwtIssuer"],
+    JwtKey = Environment.GetEnvironmentVariable("JWT_KEY") ?? builder.Configuration["Authentication:JwtKey"]
+};
 
-// Read values from environment variables or fallback to appsettings
-authenticationSettings.JwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? builder.Configuration["Authentication:JwtIssuer"];
-authenticationSettings.JwtKey = Environment.GetEnvironmentVariable("JWT_KEY") ?? builder.Configuration["Authentication:JwtKey"];
-
-// Add services to the container.
 builder.Services.AddSingleton(authenticationSettings);
+
+// Configure authentication services
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultAuthenticateScheme = "Bearer";
-    options.DefaultScheme = "Bearer";
-    options.DefaultChallengeScheme = "Bearer";
-}).AddCookie(x =>
-{
-    x.Cookie.Name = "token";
-})
-.AddJwtBearer(cfg =>
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(cfg =>
 {
     cfg.RequireHttpsMetadata = false;
     cfg.SaveToken = true;
-    cfg.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+    cfg.TokenValidationParameters = new TokenValidationParameters
     {
         ValidIssuer = authenticationSettings.JwtIssuer,
         ValidAudience = authenticationSettings.JwtIssuer,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(authenticationSettings.JwtKey)),
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(authenticationSettings.JwtKey))
     };
     cfg.Events = new JwtBearerEvents
     {
@@ -53,27 +49,26 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddSession();
 builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddDbContext<LibraryContext>(option =>
-    option.UseSqlServer(builder.Configuration.GetConnectionString("LibraryConnectionString"))
+// Configure database context
+builder.Services.AddDbContext<LibraryContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("LibraryConnectionString"))
 );
 
+// Add services for password hashing, FluentValidation, etc.
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
-
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddFluentValidationClientsideAdapters();
-
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterDtoValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<LoginDtoValidator>();
 
 var app = builder.Build();
 
-// Seeding the admin user during application startup
+// Seed admin user if not exists
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<LibraryContext>();
     var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<User>>();
 
-    // Seed admin account only if it doesn't exist
     var adminEmail = Environment.GetEnvironmentVariable("ADMIN_EMAIL") ?? "default_admin@gmail.com";
     var adminPassword = Environment.GetEnvironmentVariable("ADMIN_PASSWORD") ?? "Password123";
 
@@ -81,39 +76,38 @@ using (var scope = app.Services.CreateScope())
     {
         var adminUser = new User
         {
-            Id = Guid.NewGuid(),  // Generate new GUID
+            Id = Guid.NewGuid(),
             Email = adminEmail,
             FirstName = Environment.GetEnvironmentVariable("ADMIN_FIRST_NAME") ?? "Admin",
             LastName = Environment.GetEnvironmentVariable("ADMIN_LAST_NAME") ?? "Nimda",
             RoleId = int.TryParse(Environment.GetEnvironmentVariable("ADMIN_ROLE_ID"), out var roleId) ? roleId : 3
         };
 
-        var hashedPassword = passwordHasher.HashPassword(adminUser, adminPassword);
-        adminUser.PasswordHash = hashedPassword;
+        adminUser.PasswordHash = passwordHasher.HashPassword(adminUser, adminPassword);
 
         context.Users.Add(adminUser);
-        context.SaveChanges();  // Save the new admin user to the database
+        context.SaveChanges();
     }
 }
 
-// Configure the HTTP request pipeline.
+// Configure middleware
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
 
-app.UseAuthentication();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseSession();
-
 app.UseRouting();
-app.UseCookiePolicy();
+app.UseAuthentication();
 app.UseAuthorization();
+app.UseCookiePolicy();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Home}/{action=Index}/{id?}"
+);
 
 app.Run();

@@ -5,31 +5,28 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Library.Controllers
 {
-
     public class ResourcesController : Controller
     {
         private readonly LibraryContext _db;
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        private ISession _session => _httpContextAccessor.HttpContext.Session;
 
-        public ResourcesController(LibraryContext db, IHttpContextAccessor httpContextAccessor)
+        public ResourcesController(LibraryContext db)
         {
             _db = db;
-            _httpContextAccessor = httpContextAccessor;
         }
 
-
+        // Display a list of resources, accessible to Admin and Manager roles
         [Authorize(Roles = "Admin, Manager")]
         public IActionResult Resources()
         {
-            IEnumerable<Resource> objResourcesList = _db.Resources;
-            return View(objResourcesList);
+            var resourcesList = _db.Resources.ToList();
+            return View(resourcesList);
         }
 
+        // Search resources by title, author, type, or category
         [Authorize(Roles = "Admin, Manager")]
         public IActionResult SearchResources(string searchString)
         {
-            IQueryable<Resource> resourcesQuery = _db.Resources;
+            var resourcesQuery = _db.Resources.AsQueryable();
 
             if (!string.IsNullOrEmpty(searchString))
             {
@@ -40,138 +37,99 @@ namespace Library.Controllers
                     r.Category.Contains(searchString));
             }
 
-            IEnumerable<Resource> objResourcesList = resourcesQuery.ToList();
-            return View("Resources", objResourcesList);
+            return View("Resources", resourcesQuery.ToList());
         }
 
+        // GET: Show form for adding a new resource
         [Authorize(Roles = "Admin, Manager")]
-        //GET
         public IActionResult AddResource()
         {
             return View();
         }
 
+        // POST: Add a new resource to the database
         [Authorize(Roles = "Admin, Manager")]
-        //POST
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult AddResource(Resource obj)
+        public IActionResult AddResource(Resource resource)
         {
             if (ModelState.IsValid)
             {
-                _db.Resources.Add(obj);
+                _db.Resources.Add(resource);
                 _db.SaveChanges();
                 return RedirectToAction("Resources");
             }
-            else
-            {
-                // Sprawdź, czy wystąpiły błędy związane z polami Title, Author, Type, Category i Quantity
-                if (ModelState.TryGetValue("Title", out var titleEntry) && titleEntry.Errors.Any())
-                {
-                    // Dodaj odpowiedni komunikat o błędzie dla pola Title
-                    ModelState.AddModelError("Title", "Invalid title.");
-                }
 
-                if (ModelState.TryGetValue("Author", out var authorEntry) && authorEntry.Errors.Any())
-                {
-                    // Dodaj odpowiedni komunikat o błędzie dla pola Author
-                    ModelState.AddModelError("Author", "Invalid author.");
-                }
-
-                if (ModelState.TryGetValue("Type", out var typeEntry) && typeEntry.Errors.Any())
-                {
-                    // Dodaj odpowiedni komunikat o błędzie dla pola Type
-                    ModelState.AddModelError("Type", "Invalid type.");
-                }
-
-                if (ModelState.TryGetValue("Category", out var categoryEntry) && categoryEntry.Errors.Any())
-                {
-                    // Dodaj odpowiedni komunikat o błędzie dla pola Category
-                    ModelState.AddModelError("Category", "Invalid category.");
-                }
-
-                if (ModelState.TryGetValue("Quantity", out var quantityEntry) && quantityEntry.Errors.Any())
-                {
-                    // Dodaj odpowiedni komunikat o błędzie dla pola Quantity
-                    ModelState.AddModelError("Quantity", "Invalid quantity.");
-                }
-
-                // Zwróć widok logowania z modelem zawierającym błędy walidacji
-                return View("AddResource", obj);
-            }
-
+            // Handle validation errors for resource fields
+            ValidateResourceFields();
+            return View("AddResource", resource);
         }
+
+        // GET: Show form to edit an existing resource
         [Authorize(Roles = "Admin, Manager")]
         public IActionResult EditResource(int id)
         {
             var resource = _db.Resources.Find(id);
             return View(resource);
         }
-        [HttpPost]
+
+        // POST: Save changes to an existing resource
         [Authorize(Roles = "Admin, Manager")]
-        public IActionResult EditResource(Resource obj)
+        [HttpPost]
+        public IActionResult EditResource(Resource resource)
         {
             if (ModelState.IsValid)
             {
-                _db.Resources.Update(obj);
+                _db.Resources.Update(resource);
                 _db.SaveChanges();
                 return RedirectToAction("Resources");
             }
-            else
-            {
-                // Sprawdź, czy wystąpiły błędy związane z polami Title, Author, Type, Category i Quantity
-                if (ModelState.TryGetValue("Title", out var titleEntry) && titleEntry.Errors.Any())
-                {
-                    // Dodaj odpowiedni komunikat o błędzie dla pola Title
-                    ModelState.AddModelError("Title", "Invalid title.");
-                }
 
-                if (ModelState.TryGetValue("Author", out var authorEntry) && authorEntry.Errors.Any())
-                {
-                    // Dodaj odpowiedni komunikat o błędzie dla pola Author
-                    ModelState.AddModelError("Author", "Invalid author.");
-                }
-
-                if (ModelState.TryGetValue("Type", out var typeEntry) && typeEntry.Errors.Any())
-                {
-                    // Dodaj odpowiedni komunikat o błędzie dla pola Type
-                    ModelState.AddModelError("Type", "Invalid type.");
-                }
-
-                if (ModelState.TryGetValue("Category", out var categoryEntry) && categoryEntry.Errors.Any())
-                {
-                    // Dodaj odpowiedni komunikat o błędzie dla pola Category
-                    ModelState.AddModelError("Category", "Invalid category.");
-                }
-
-                if (ModelState.TryGetValue("Quantity", out var quantityEntry) && quantityEntry.Errors.Any())
-                {
-                    // Dodaj odpowiedni komunikat o błędzie dla pola Quantity
-                    ModelState.AddModelError("Quantity", "Invalid quantity.");
-                }
-
-                // Zwróć widok logowania z modelem zawierającym błędy walidacji
-                return View("EditResource", obj);
-            }
-
-
+            // Handle validation errors for resource fields
+            ValidateResourceFields();
+            return View("EditResource", resource);
         }
 
-
-
-
+        // DELETE: Remove a resource from the database
         [Authorize(Roles = "Admin, Manager")]
         public IActionResult DeleteResource(int id)
         {
             var resource = _db.Resources.Find(id);
-            _db.Resources.Remove(resource);
-            _db.SaveChanges();
+            if (resource != null)
+            {
+                _db.Resources.Remove(resource);
+                _db.SaveChanges();
+            }
             return RedirectToAction("Resources");
         }
 
+        // Helper method to handle validation errors for resource fields
+        private void ValidateResourceFields()
+        {
+            if (ModelState.TryGetValue("Title", out var titleEntry) && titleEntry.Errors.Any())
+            {
+                ModelState.AddModelError("Title", "Invalid title.");
+            }
 
+            if (ModelState.TryGetValue("Author", out var authorEntry) && authorEntry.Errors.Any())
+            {
+                ModelState.AddModelError("Author", "Invalid author.");
+            }
 
+            if (ModelState.TryGetValue("Type", out var typeEntry) && typeEntry.Errors.Any())
+            {
+                ModelState.AddModelError("Type", "Invalid type.");
+            }
 
+            if (ModelState.TryGetValue("Category", out var categoryEntry) && categoryEntry.Errors.Any())
+            {
+                ModelState.AddModelError("Category", "Invalid category.");
+            }
 
+            if (ModelState.TryGetValue("Quantity", out var quantityEntry) && quantityEntry.Errors.Any())
+            {
+                ModelState.AddModelError("Quantity", "Invalid quantity.");
+            }
+        }
     }
 }
