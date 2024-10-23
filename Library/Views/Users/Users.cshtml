@@ -41,7 +41,7 @@
                             <td>
                                 <div class="btn-group" role="group">
                                     <button type="button" class="btn btn-info" onclick="toggleDetails('@user.Id')">Details</button>
-                                    <a asp-controller="Users" asp-action="EditUserAdmin" asp-route-id="@user.Id" class="btn btn-primary">Edit</a>
+                                    <a asp-controller="Users" asp-action="EditUser" asp-route-id="@user.Id" class="btn btn-primary">Edit</a>
                                     @{
                                         if (user.RoleId == 3)
                                         {

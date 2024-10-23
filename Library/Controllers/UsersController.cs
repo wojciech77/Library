@@ -3,20 +3,21 @@ using Library.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Data;
-using System.Security.Claims;
 
 namespace Library.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class UsersController : Controller
     {
         private readonly LibraryContext _db;
+
+        // Constructor that initializes the database context
         public UsersController(LibraryContext db)
         {
             _db = db;
         }
 
-        // Display a list of all users for admins
+        // Displays a list of users with their addresses
         [Authorize(Roles = "Admin")]
         public IActionResult Users()
         {
@@ -24,159 +25,80 @@ namespace Library.Controllers
             return View(objUsersList);
         }
 
-        /*
-        // Allow regular users to edit their own details
-        [Authorize(Roles = "User")]
-        [HttpGet]
-        [Route("Users/EditUser")] // Route for regular users to edit their own details
-        public IActionResult EditUser()
-        {
-            var userId = Guid.Parse(HttpContext.User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value);
-            var user = _db.Users.Include(u => u.Address).FirstOrDefault(u => u.Id == userId);
-
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            return View(user); // Specify the view name directly
-        }
-
-        // Allow admins and managers to edit any user's details
+        // GET: Edit a specific user by id
         [Authorize(Roles = "Admin, Manager")]
-        [HttpGet]
-        [Route("Users/EditUserAdmin/{id:Guid}")] // Route for admins/managers to edit users
-        public IActionResult EditUserAdmin(Guid id)
+        [Route("EditUser/{id:Guid}")]
+        public IActionResult EditUser(Guid id)
         {
-            var user = _db.Users.Include(u => u.Address).FirstOrDefault(u => u.Id == id);
-
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            return View(user); // Ensure this matches your view name
+            var user = _db.Users
+                           .Include(u => u.Address)
+                           .FirstOrDefault(u => u.Id == id);
+            return View(user);
         }
 
-        // Process the user edit request (for regular users)
         [HttpPost]
-        [Authorize(Roles = "User")]
-        [Route("Users/EditUser")] // Same route for the POST request
+        [Authorize(Roles = "Admin, Manager")]
+        [ValidateAntiForgeryToken] // Protect the POST request from CSRF attacks
         public IActionResult EditUser(User user)
         {
-            // Fetch the existing user from the database
-            var existingUser = _db.Users.Include(u => u.Address).FirstOrDefault(u => u.Id == user.Id);
+            var existingUser = _db.Users.FirstOrDefault(u => u.Id == user.Id);
 
-            if (existingUser == null)
-            {
-                return NotFound();
-            }
-
-            // Ensure the email is unique across users (except for the same user)
+            // Ensure the new email is unique among other users
             var existingUserWithEmail = _db.Users.FirstOrDefault(u => u.Email == user.Email && u.Id != user.Id);
             if (existingUserWithEmail != null)
             {
                 ModelState.AddModelError("Email", "This email is already in use.");
-                return View("EditUser", user); // Return to the same view for regular users
+                return View(user); // Return to view with error message
             }
 
-            // Update user details without changing the RoleId
-            UpdateUserDetails(existingUser, user, false);
-            _db.SaveChanges(); // Save changes to the database
-            return RedirectToAction("EditUser"); // Redirect back to the user's edit view
-        }
+            // Update only modified fields
+            existingUser.FirstName = user.FirstName;
+            existingUser.LastName = user.LastName;
+            existingUser.Email = user.Email;
+            existingUser.PhoneNumber = user.PhoneNumber;
+            existingUser.DateOfBirth = user.DateOfBirth;
+            existingUser.PersonalIdNumber = user.PersonalIdNumber;
+            existingUser.RoleId = user.RoleId;
 
-        // Process the user edit request (for admins/managers)
-        [HttpPost]
-        [Authorize(Roles = "Admin, Manager")]
-        [Route("Users/EditUserAdmin")] // Same route for the POST request
-        public IActionResult EditUserAdmin(User user)
-        {
-            // Fetch the existing user from the database
-            var existingUser = _db.Users.Include(u => u.Address).FirstOrDefault(u => u.Id == user.Id);
-
-            if (existingUser == null)
-            {
-                return NotFound();
-            }
-
-            // Ensure the email is unique across users (except for the same user)
-            var existingUserWithEmail = _db.Users.FirstOrDefault(u => u.Email == user.Email && u.Id != user.Id);
-            if (existingUserWithEmail != null)
-            {
-                ModelState.AddModelError("Email", "This email is already in use.");
-                return View(user); // Return to the admin view
-            }
-
-            // Update user details with RoleId changes allowed
-            UpdateUserDetails(existingUser, user, true);
-            _db.SaveChanges(); // Save changes to the database
-            return RedirectToAction("Users"); // Redirect to the Users view
-        }
-
-
-        // Helper method to update user details
-        private void UpdateUserDetails(User existingUser, User updatedUser, bool allowRoleUpdate)
-        {
-            // Update common fields
-            existingUser.FirstName = updatedUser.FirstName;
-            existingUser.LastName = updatedUser.LastName;
-            existingUser.Email = updatedUser.Email;
-            existingUser.PhoneNumber = updatedUser.PhoneNumber;
-            existingUser.DateOfBirth = updatedUser.DateOfBirth;
-            existingUser.PersonalIdNumber = updatedUser.PersonalIdNumber;
-
-            // Update RoleId only if admin or manager
-            if (allowRoleUpdate)
-            {
-                existingUser.RoleId = updatedUser.RoleId;
-            }
-
-            // Update or insert address
-            var existingAddress = _db.Addresses.FirstOrDefault(a => a.UserId == updatedUser.Id);
+            // Check if user has an address and update or add accordingly
+            var existingAddress = _db.Addresses.FirstOrDefault(a => a.UserId == user.Id);
 
             if (existingAddress != null)
             {
-                // Update existing address
-                existingAddress.Street = updatedUser.Address.Street;
-                existingAddress.PostalCode = updatedUser.Address.PostalCode;
-                existingAddress.City = updatedUser.Address.City;
-                existingAddress.Country = updatedUser.Address.Country;
+                existingAddress.Street = user.Address.Street;
+                existingAddress.PostalCode = user.Address.PostalCode;
+                existingAddress.City = user.Address.City;
+                existingAddress.Country = user.Address.Country;
 
-                _db.Addresses.Update(existingAddress);
+                _db.Addresses.Update(existingAddress); // Update existing address
             }
             else
             {
-                // Insert new address
                 var newAddress = new Address
                 {
-                    UserId = updatedUser.Id,
-                    Street = updatedUser.Address.Street ?? "",
-                    PostalCode = updatedUser.Address.PostalCode ?? "",
-                    City = updatedUser.Address.City ?? "",
-                    Country = updatedUser.Address.Country ?? ""
+                    UserId = user.Id,
+                    Street = user.Address.Street ?? "",
+                    PostalCode = user.Address.PostalCode ?? "",
+                    City = user.Address.City ?? "",
+                    Country = user.Address.Country ?? ""
                 };
 
-                _db.Addresses.Add(newAddress);
+                _db.Addresses.Add(newAddress); // Add new address if none exists
             }
 
-            // Mark user entity as updated
+            // Save updated user and related data
             _db.Users.Update(existingUser);
+            _db.SaveChanges();
+            return RedirectToAction("Users");
         }
-        */
 
-        // Admin-only: Delete a user based on their ID
+        // Deletes a user unless they are an admin (RoleId == 3)
         [Authorize(Roles = "Admin")]
         public IActionResult DeleteUser(Guid id)
         {
             var user = _db.Users.Find(id);
 
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            // Prevent deletion of the admin role itself
+            // Prevent deletion of admin users
             if (user.RoleId == 3)
             {
                 return RedirectToAction("Users");

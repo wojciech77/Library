@@ -34,28 +34,6 @@ The Library Management System is designed to digitalize library records and simp
 - **EF Migrations** for managing database changes.
 
 
-## How to Run the Project
-
-1. Clone the repository:
-    ```bash
-    git clone https://github.com/wojciech77/Library
-    ```
-2. Navigate to the project directory:
-    ```bash
-    cd library-management-system
-    ```
-3. Set up the database:
-    - Ensure you have SQL Server installed.
-    - Configure the connection string in `appsettings.json`.
-    - Run database migrations:
-      ```bash
-      dotnet ef database update
-      ```
-4. Run the application:
-    ```bash
-    dotnet run
-    ```
-
 ## Future Improvements
 
 - **Email Notifications**: Implement email notifications for borrowing status updates.
