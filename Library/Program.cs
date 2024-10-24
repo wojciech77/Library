@@ -15,7 +15,10 @@ var builder = WebApplication.CreateBuilder(args);
 var authenticationSettings = new AuthenticationSettings
 {
     JwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? builder.Configuration["Authentication:JwtIssuer"],
-    JwtKey = Environment.GetEnvironmentVariable("JWT_KEY") ?? builder.Configuration["Authentication:JwtKey"]
+    JwtKey = Environment.GetEnvironmentVariable("JWT_KEY") ?? builder.Configuration["Authentication:JwtKey"],
+    JwtExpireDays = int.TryParse(Environment.GetEnvironmentVariable("JWT_EXPIREDAYS"), out var expireDays)
+                    ? expireDays
+                    : int.Parse(builder.Configuration["Authentication:JwtExpireDays"])
 };
 
 builder.Services.AddSingleton(authenticationSettings);
@@ -33,6 +36,7 @@ builder.Services.AddAuthentication(options =>
     {
         ValidIssuer = authenticationSettings.JwtIssuer,
         ValidAudience = authenticationSettings.JwtIssuer,
+        
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(authenticationSettings.JwtKey))
     };
     cfg.Events = new JwtBearerEvents
@@ -79,7 +83,7 @@ using (var scope = app.Services.CreateScope())
             Id = Guid.NewGuid(),
             Email = adminEmail,
             FirstName = Environment.GetEnvironmentVariable("ADMIN_FIRST_NAME") ?? "Admin",
-            LastName = Environment.GetEnvironmentVariable("ADMIN_LAST_NAME") ?? "Nimda",
+            LastName = Environment.GetEnvironmentVariable("ADMIN_LAST_NAME") ?? "Admin",
             RoleId = int.TryParse(Environment.GetEnvironmentVariable("ADMIN_ROLE_ID"), out var roleId) ? roleId : 3
         };
 

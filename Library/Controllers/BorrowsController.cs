@@ -3,6 +3,7 @@ using Library.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using Newtonsoft.Json;
 using System.Security.Claims;
 
@@ -93,7 +94,10 @@ namespace Library.Controllers
                 if (borrow.Resources.Count <= 2)
                 {
                     // Ensure the resource hasn't already been borrowed by the user
-                    var alreadyBorrowed = _db.Borrows.Any(b => b.UserId == userId && b.Resources.Any(r => r.Id == id));
+                    var alreadyBorrowed = _db.Borrows
+                        .Any(b => b.UserId == userId &&
+                            b.Resources.Any(r => r.Id == id) &&
+                            b.Status != "Returned");
 
                     if (!alreadyBorrowed)
                     {
@@ -218,7 +222,7 @@ namespace Library.Controllers
         [HttpPost]
         public IActionResult ChangeStatus(int borrowId, string status)
         {
-            var borrow = _db.Borrows.Find(borrowId);
+            var borrow = _db.Borrows.Include(b => b.Resources).FirstOrDefault(b => b.Id == borrowId);
 
             if (borrow != null)
             {
@@ -233,6 +237,17 @@ namespace Library.Controllers
                 if (status == "Returned")
                 {
                     borrow.ReturnDay = DateTime.Now;
+
+                    foreach (var resource in borrow.Resources)
+                    {
+                        var dbResource = _db.Resources.Find(resource.Id);
+                        if (dbResource != null)
+                        {
+                            dbResource.Quantity += 1; // Restore resource quantity
+                            _db.Resources.Update(dbResource);
+                        }
+                    }
+
                 }
 
                 _db.SaveChanges();

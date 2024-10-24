@@ -70,8 +70,7 @@ namespace Library.Data
                 .Property(r => r.Title)
                 .IsRequired();
 
-            modelBuilder.Entity<Address>()
-                .Property(a => a.Street).IsRequired();
+            
 
               
 

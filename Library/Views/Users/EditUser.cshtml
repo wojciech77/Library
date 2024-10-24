@@ -13,8 +13,6 @@
 }
 
 <form method="post">
-    @Html.AntiForgeryToken() <!-- Adds the anti-forgery token -->
-
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-6">
@@ -44,7 +42,7 @@
                         </div>
                         <div class="mb-3">
                             <label asp-for="DateOfBirth" class="form-label">Date of Birth</label>
-                            <input asp-for="DateOfBirth" type="date" class="form-control" />
+                            <input asp-for="DateOfBirth" type="date" class="form-control"/>
                             <span asp-validation-for="DateOfBirth" class="text-danger"></span>
                         </div>
                         <div class="mb-3">
